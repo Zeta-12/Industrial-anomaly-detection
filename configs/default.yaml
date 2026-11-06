@@ -1,0 +1,32 @@
+# Every key is optional: anything missing falls back to industrial_ad/config.py.
+data:
+  root: datasets/MVTecAD        # folder that contains bottle/, cable/, ... pill/, ...
+  category: pill
+  image_size: [256, 256]
+  calib_ratio: 0.1              # share of train/good held out to calibrate the threshold
+  seed: 42
+  max_test_samples: 0           # 0 = full test set; N > 0 = stratified subsample (quick runs)
+
+model:
+  name: patchcore               # patchcore | padim
+  patchcore:
+    backbone: wide_resnet50_2
+    layers: [layer2, layer3]
+    coreset_sampling_ratio: 0.1
+    num_neighbors: 9
+  padim:
+    backbone: resnet18
+    layers: [layer1, layer2, layer3]
+
+train:
+  accelerator: auto             # auto | cpu | gpu
+  batch_size: 32
+  num_workers: 0
+
+evaluation:
+  max_fpr: 0.05                 # target false-positive rate on held-out normal images
+  aupro_fpr_limit: 0.3
+  batch_size: 8
+  save_all_panels: false        # false = only best / hardest example per defect type
+
+output_dir: runs

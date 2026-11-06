@@ -1,0 +1,22 @@
+# Environments
+.venv/
+__pycache__/
+*.py[cod]
+
+# Data and models: downloaded / produced locally, never committed
+datasets/
+runs/
+*.ckpt
+*.pt
+*.pth
+*.onnx
+*.xml
+*.bin
+
+# Tooling
+.pytest_cache/
+.ruff_cache/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

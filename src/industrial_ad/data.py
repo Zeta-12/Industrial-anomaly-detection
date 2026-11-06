@@ -1,0 +1,147 @@
+"""Indexing and splitting of datasets stored in MVTec AD layout.
+
+Expected layout for one category::
+
+    <root>/<category>/
+        train/good/*.png                 defect-free images (the only training data)
+        test/good/*.png                  defect-free test images
+        test/<defect_type>/*.png         defective test images
+        ground_truth/<defect_type>/<stem>_mask.png
+"""
+
+from __future__ import annotations
+
+import os
+import random
+import shutil
+from collections import defaultdict
+from collections.abc import Sequence
+from dataclasses import dataclass
+from pathlib import Path
+
+MVTEC_CATEGORIES: tuple[str, ...] = (
+    "bottle",
+    "cable",
+    "capsule",
+    "carpet",
+    "grid",
+    "hazelnut",
+    "leather",
+    "metal_nut",
+    "pill",
+    "screw",
+    "tile",
+    "toothbrush",
+    "transistor",
+    "wood",
+    "zipper",
+)
+
+IMAGE_SUFFIXES = frozenset({".png", ".jpg", ".jpeg", ".bmp"})
+NORMAL = "good"
+
+
+@dataclass(frozen=True)
+class Sample:
+    """One evaluation image and its ground truth."""
+
+    image_path: Path
+    label: int  # 0 = normal, 1 = anomalous
+    defect: str  # "good" or the defect type
+    mask_path: Path | None = None  # None for normal images (empty mask)
+
+
+def list_images(directory: Path) -> list[Path]:
+    """Sorted image files directly inside `directory`."""
+    if not directory.is_dir():
+        raise FileNotFoundError(f"Directory not found: {directory}")
+    return sorted(p for p in directory.iterdir() if p.suffix.lower() in IMAGE_SUFFIXES)
+
+
+def index_test_set(category_dir: Path) -> list[Sample]:
+    """Return every test image with its label and mask, normal images first."""
+    test_dir = category_dir / "test"
+    gt_dir = category_dir / "ground_truth"
+    if not test_dir.is_dir():
+        raise FileNotFoundError(f"No test/ directory in {category_dir}")
+
+    defect_dirs = sorted(
+        (d for d in test_dir.iterdir() if d.is_dir()),
+        key=lambda d: (d.name != NORMAL, d.name),
+    )
+    samples: list[Sample] = []
+    for defect_dir in defect_dirs:
+        is_normal = defect_dir.name == NORMAL
+        for image_path in list_images(defect_dir):
+            mask_path = None
+            if not is_normal:
+                mask_path = gt_dir / defect_dir.name / f"{image_path.stem}_mask.png"
+                if not mask_path.exists():
+                    raise FileNotFoundError(f"Missing ground-truth mask for {image_path} (expected {mask_path})")
+            samples.append(Sample(image_path, 0 if is_normal else 1, defect_dir.name, mask_path))
+    return samples
+
+
+def split_train(category_dir: Path, calib_ratio: float, seed: int) -> tuple[list[Path], list[Path]]:
+    """Split train/good into a fitting set and a held-out calibration set.
+
+    The calibration images are never seen during fitting; their scores are used to
+    choose the decision threshold, so the test set is not used for any tuning.
+    """
+    if not 0.0 < calib_ratio < 1.0:
+        raise ValueError(f"calib_ratio must be in (0, 1), got {calib_ratio}")
+    images = list_images(category_dir / "train" / NORMAL)
+    if len(images) < 2:
+        raise ValueError(f"Need at least 2 training images, found {len(images)}")
+
+    shuffled = images.copy()
+    random.Random(seed).shuffle(shuffled)
+    n_calib = min(len(images) - 1, max(1, round(len(images) * calib_ratio)))
+    return sorted(shuffled[n_calib:]), sorted(shuffled[:n_calib])
+
+
+def materialize(paths: Sequence[Path], dest: Path) -> Path:
+    """Expose a subset of images as a folder, using hard links (copies as a fallback)."""
+    if dest.exists():
+        shutil.rmtree(dest)
+    dest.mkdir(parents=True)
+    for path in paths:
+        target = dest / path.name
+        try:
+            os.link(path, target)
+        except OSError:
+            shutil.copy2(path, target)
+    return dest
+
+
+def stratified_subset(samples: Sequence[Sample], max_samples: int, seed: int) -> list[Sample]:
+    """Subsample while keeping every defect type represented, in proportion to its size.
+
+    `max_samples <= 0` keeps everything. Original ordering is preserved.
+    """
+    if max_samples <= 0 or max_samples >= len(samples):
+        return list(samples)
+
+    groups: dict[str, list[int]] = defaultdict(list)
+    for i, sample in enumerate(samples):
+        groups[sample.defect].append(i)
+    if max_samples < len(groups):
+        raise ValueError(f"max_samples={max_samples} cannot cover the {len(groups)} defect types")
+
+    # Largest-remainder allocation with at least one sample per group.
+    exact = {k: max_samples * len(v) / len(samples) for k, v in groups.items()}
+    quotas = {k: max(1, int(exact[k])) for k in groups}
+    by_remainder = sorted(groups, key=lambda k: exact[k] - int(exact[k]), reverse=True)
+    i = 0
+    while sum(quotas.values()) < max_samples:
+        k = by_remainder[i % len(by_remainder)]
+        if quotas[k] < len(groups[k]):
+            quotas[k] += 1
+        i += 1
+    while sum(quotas.values()) > max_samples:
+        k = max(quotas, key=lambda g: quotas[g])
+        quotas[k] -= 1
+
+    rng = random.Random(seed)
+    chosen = sorted(idx for k, idx in groups.items() for idx in rng.sample(idx, quotas[k]))
+    return [samples[i] for i in chosen]

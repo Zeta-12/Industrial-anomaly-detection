@@ -1,0 +1,118 @@
+{
+  "model": "patchcore",
+  "category": "pill",
+  "n_test": 167,
+  "n_calibration": 27,
+  "image": {
+    "auroc": 0.9489907255864704,
+    "ap": 0.9906458894980604,
+    "threshold": 35.158424377441406,
+    "tp": 128,
+    "fp": 3,
+    "fn": 13,
+    "tn": 23,
+    "precision": 0.9770992366412213,
+    "recall": 0.9078014184397163,
+    "f1": 0.9411764705882354,
+    "fpr": 0.11538461538461539,
+    "oracle_f1": 0.9496402877697842,
+    "oracle_threshold": 34.421905517578125
+  },
+  "pixel": {
+    "auroc": 0.9807386704292644,
+    "aupro": 0.9398884984903341,
+    "aupro_fpr_limit": 0.3,
+    "threshold": 34.150325775146484
+  },
+  "per_defect": {
+    "good": {
+      "n": 26,
+      "flagged": 3,
+      "rate": 0.11538461538461539,
+      "kind": "false_positive_rate"
+    },
+    "color": {
+      "n": 25,
+      "flagged": 20,
+      "rate": 0.8,
+      "kind": "recall"
+    },
+    "combined": {
+      "n": 17,
+      "flagged": 17,
+      "rate": 1.0,
+      "kind": "recall"
+    },
+    "contamination": {
+      "n": 21,
+      "flagged": 20,
+      "rate": 0.9523809523809523,
+      "kind": "recall"
+    },
+    "crack": {
+      "n": 26,
+      "flagged": 21,
+      "rate": 0.8076923076923077,
+      "kind": "recall"
+    },
+    "faulty_imprint": {
+      "n": 19,
+      "flagged": 18,
+      "rate": 0.9473684210526315,
+      "kind": "recall"
+    },
+    "pill_type": {
+      "n": 9,
+      "flagged": 9,
+      "rate": 1.0,
+      "kind": "recall"
+    },
+    "scratch": {
+      "n": 24,
+      "flagged": 23,
+      "rate": 0.9583333333333334,
+      "kind": "recall"
+    }
+  },
+  "calibration": {
+    "max_fpr": 0.05,
+    "image_threshold": 35.158424377441406,
+    "pixel_threshold": 34.150325775146484
+  },
+  "timing": {
+    "ms_per_image_end_to_end": 548.8,
+    "device": "cpu",
+    "note": "includes image decoding and resizing; see the export benchmark for model latency"
+  },
+  "config": {
+    "data": {
+      "root": "C:/Users/Julien/Documents/Perso/Portfolio_Pro/Computer Vision/05_anomaly_detection/dataset",
+      "category": "pill",
+      "image_size": [
+        256,
+        256
+      ],
+      "calib_ratio": 0.1,
+      "seed": 42,
+      "max_test_samples": 0
+    },
+    "model": {
+      "patchcore": {
+        "backbone": "wide_resnet50_2",
+        "layers": [
+          "layer2",
+          "layer3"
+        ],
+        "coreset_sampling_ratio": 0.1,
+        "num_neighbors": 9
+      }
+    }
+  },
+  "environment": {
+    "python": "3.12.10",
+    "torch": "2.15.0+cpu",
+    "anomalib": "2.7.0",
+    "cpu": "Intel64 Family 6 Model 181 Stepping 0, GenuineIntel",
+    "cuda_device": null
+  }
+}
