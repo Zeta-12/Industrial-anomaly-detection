@@ -64,7 +64,7 @@ def test_pixel_metrics_perfect_map():
 
 
 def test_aupro_random_map_matches_diagonal():
-    # A random map gives PRO ≈ FPR, so the normalised area up to 0.3 is ≈ 0.15.
+    # random map: PRO ~ FPR, so the normalised area up to 0.3 is ~0.15
     masks = _blobs(n=40, size=64)
     rng = np.random.default_rng(1)
     maps = [rng.random(m.shape) for m in masks]
@@ -72,10 +72,10 @@ def test_aupro_random_map_matches_diagonal():
 
 
 def test_aupro_weights_regions_equally():
-    # One large region found, one tiny region missed: PRO saturates at 0.5, whatever the sizes.
+    # one big region found and one tiny region missed -> PRO stays at 0.5
     mask = np.zeros((40, 40), dtype=bool)
     mask[:20, :20] = True  # 400 px, detected
-    mask[30, 30] = True  # 1 px, missed (scores below every normal pixel)
+    mask[30, 30] = True  # 1 px, missed
     amap = np.where(mask, 1.0, 0.5)
     amap[30, 30] = 0.0
     assert M.aupro([mask], [amap]) == pytest.approx(0.5)

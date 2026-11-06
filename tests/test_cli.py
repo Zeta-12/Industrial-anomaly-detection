@@ -3,7 +3,9 @@ import pytest
 from industrial_ad import cli
 
 
-@pytest.mark.parametrize("command", ["download", "train", "evaluate", "run", "summary", "export", "benchmark"])
+@pytest.mark.parametrize(
+    "command", ["download", "train", "evaluate", "run", "summary", "export", "benchmark", "int8-bank"]
+)
 def test_every_command_has_help(command, capsys):
     with pytest.raises(SystemExit) as exc:
         cli.main([command, "--help"])

@@ -1,8 +1,7 @@
-"""Latency *and* accuracy of the exported model on every OpenVINO device: CPU, integrated GPU, NPU.
+"""Latency and accuracy of the exported model on the OpenVINO devices (CPU, iGPU, NPU).
 
-Latency alone is misleading for PatchCore: GPU and NPU execute in FP16 by default, and the memory-bank distance
-||x||^2 + ||y||^2 - 2 x.y is prone to cancellation in half precision. Every (precision, target) pair is therefore
-re-evaluated on the full test set with the same calibrated-threshold protocol as the PyTorch reference.
+GPU and NPU run in FP16 by default and the PatchCore distance ||x||^2 + ||y||^2 - 2 x.y can lose precision in FP16,
+so each (precision, device) pair is also re-scored on the test set with the calibrated threshold.
 """
 
 from __future__ import annotations
@@ -27,7 +26,7 @@ DEFAULT_TARGETS = ("CPU", "GPU", "GPU:f32", "NPU")
 
 
 def parse_target(target: str) -> tuple[str, dict[str, str]]:
-    """'GPU:f32' -> ('GPU', {latency hint, f32 execution}). The suffix forces INFERENCE_PRECISION_HINT."""
+    """'GPU:f32' -> ('GPU', {'PERFORMANCE_HINT': 'LATENCY', 'INFERENCE_PRECISION_HINT': 'f32'})"""
     device, _, precision = target.partition(":")
     config = {"PERFORMANCE_HINT": "LATENCY"}
     if precision:
@@ -52,7 +51,7 @@ def latency_stats(times_ms: Sequence[float]) -> dict[str, float]:
 
 
 def measure_latency(infer, warmup: int, iterations: int) -> dict[str, float]:
-    """Synchronous batch-1 latency of `infer()` (a zero-argument callable), after `warmup` calls."""
+    """Time `iterations` calls of `infer()` after `warmup` untimed calls."""
     for _ in range(warmup):
         infer()
     times = []
@@ -64,7 +63,7 @@ def measure_latency(infer, warmup: int, iterations: int) -> dict[str, float]:
 
 
 def run_compiled(compiled, inputs: Sequence[np.ndarray]) -> tuple[np.ndarray, list[np.ndarray]]:
-    """Raw scores and maps of an OpenVINO compiled model for CHW float inputs."""
+    """Raw scores and anomaly maps from a compiled model, one CHW image at a time."""
     request = compiled.create_infer_request()
     scores, maps = [], []
     for x in inputs:
@@ -82,7 +81,7 @@ def environment() -> dict[str, Any]:
     for device in core.available_devices:
         props = {}
         for prop in ("FULL_DEVICE_NAME", "NPU_DRIVER_VERSION", "GPU_DEVICE_TOTAL_MEM_SIZE"):
-            with contextlib.suppress(Exception):  # property not exposed by every plugin
+            with contextlib.suppress(Exception):  # not every plugin has these properties
                 props[prop] = str(core.get_property(device, prop))
         devices[device] = props
     return {
@@ -95,7 +94,7 @@ def environment() -> dict[str, Any]:
 
 
 def power_status() -> dict[str, bool | None]:
-    """AC power and battery saver (Windows only). Laptops throttle hard on battery: results would not be comparable."""
+    """AC power and battery saver state (Windows only), since laptops throttle a lot on battery."""
     if sys.platform != "win32":
         return {"on_ac_power": None, "battery_saver": None}
     import ctypes
@@ -136,7 +135,7 @@ def run(
     out.mkdir(parents=True, exist_ok=True)
     env = environment()
     if env["on_ac_power"] is False or env["battery_saver"]:
-        log.warning("Running on battery or with battery saver on: latencies will not be representative.")
+        log.warning("On battery or battery saver enabled, latencies won't be representative.")
 
     paths = export.export(cfg, precisions)
     size = cfg["data"]["image_size"]
@@ -144,7 +143,7 @@ def run(
     test_inputs = [export._chw(models.load_image(s.image_path, size)) for s in samples] if accuracy else []
     calib_inputs = [export._chw(models.load_image(p, size)) for p in pipeline.calibration_paths(cfg)]
     masks = [models.load_mask(s.mask_path, size) for s in samples] if accuracy else []
-    latency_input = calib_inputs[0][None]  # any real image: latency does not depend on content
+    latency_input = calib_inputs[0][None]  # latency doesn't depend on the image content
     reference = _reference_scores(cfg, samples)
 
     rows: list[dict[str, Any]] = []
@@ -177,7 +176,7 @@ def run(
                 row.update(measure_latency(lambda req=request: req.infer({0: latency_input}), warmup, iterations))
                 if accuracy:
                     row.update(_accuracy(compiled, calib_inputs, test_inputs, samples, masks, cfg, reference))
-            except Exception as exc:  # one failing target must not stop the benchmark
+            except Exception as exc:  # keep going if one device fails, the error goes in the table
                 row["error"] = f"{type(exc).__name__}: {str(exc).strip().splitlines()[0][:300]}"
                 log.error("[%s | %s] failed: %s", precision, target, row["error"])
             rows.append(row)
@@ -206,17 +205,17 @@ def markdown_table(rows: Sequence[dict[str, Any]]) -> str:
     lines = ["| " + " | ".join(header) + " |", "|" + "---|" * len(header)]
 
     def fmt(value: Any, spec: str) -> str:
-        return "–" if value is None else format(value, spec)
+        return "-" if value is None else format(value, spec)
 
     for r in rows:
         if "error" in r:
-            cells = [r["runtime"], r["target"], r.get("weights", "–"), f"**failed**: {r['error']}"] + ["–"] * 9
+            cells = [r["runtime"], r["target"], r.get("weights", "-"), f"**failed**: {r['error']}"] + ["-"] * 9
         else:
             cells = [
                 r["runtime"],
                 r["target"],
-                r.get("weights", "–"),
-                short_precision(r.get("execution_precision")) or "–",
+                r.get("weights", "-"),
+                short_precision(r.get("execution_precision")) or "-",
                 fmt(r.get("latency_p50_ms"), ".1f"),
                 fmt(r.get("latency_p90_ms"), ".1f"),
                 fmt(r.get("fps_batch1"), ".1f"),
@@ -231,9 +230,6 @@ def markdown_table(rows: Sequence[dict[str, Any]]) -> str:
     return "\n".join(lines)
 
 
-# ── helpers ──────────────────────────────────────────────────────────────────
-
-
 def _execution_precision(compiled) -> str | None:
     try:
         value = compiled.get_property("INFERENCE_PRECISION_HINT")
@@ -243,7 +239,7 @@ def _execution_precision(compiled) -> str | None:
 
 
 def short_precision(value: str | None) -> str | None:
-    """'f32' stays 'f32'; older results stored the repr "<Type: 'float32'>"."""
+    """'float32' or "<Type: 'float32'>" -> 'f32' (same for f16 / bf16)."""
     if value is None:
         return None
     for long, short in (("float32", "f32"), ("float16", "f16"), ("bf16", "bf16")):
@@ -253,7 +249,7 @@ def short_precision(value: str | None) -> str | None:
 
 
 def render(cfg: dict[str, Any]) -> list[dict[str, Any]]:
-    """Rebuild results.md and the figure from results.json, without re-running anything."""
+    """Regenerate results.md and the plot from an existing results.json."""
     out = run_dir(cfg) / "benchmark"
     payload = json.loads((out / "results.json").read_text(encoding="utf-8"))
     rows = payload["rows"]
@@ -271,8 +267,7 @@ def _accuracy(compiled, calib_inputs, test_inputs, samples, masks, cfg, referenc
     calib_scores, calib_maps = run_compiled(compiled, calib_inputs)
     scores, maps = run_compiled(compiled, test_inputs)
     nonfinite = int((~np.isfinite(scores)).sum() + sum(int((~np.isfinite(m)).sum()) for m in maps))
-    if nonfinite or not np.isfinite(calib_scores).all():
-        # Typically FP16 overflow: report it instead of crashing on NaN metrics.
+    if nonfinite or not np.isfinite(calib_scores).all():  # most likely an FP16 overflow
         return {"nonfinite_values": nonfinite, "accuracy_error": f"{nonfinite} non-finite outputs (FP16 overflow?)"}
     d = pipeline.detection_metrics(calib_scores, calib_maps, samples, scores, maps, masks, cfg["evaluation"])
     row = {
@@ -292,7 +287,7 @@ def _accuracy(compiled, calib_inputs, test_inputs, samples, masks, cfg, referenc
 
 
 def _reference_scores(cfg, samples) -> np.ndarray | None:
-    """PyTorch scores from `iad evaluate` (scores.csv), aligned with `samples`; None if unavailable."""
+    """PyTorch scores saved by `iad evaluate` (scores.csv), in the order of `samples`, or None."""
     import csv
 
     path = run_dir(cfg) / "scores.csv"
@@ -307,7 +302,7 @@ def _reference_scores(cfg, samples) -> np.ndarray | None:
 
 
 def _pytorch_row(cfg, latency_input: np.ndarray, warmup: int, iterations: int) -> dict[str, Any]:
-    """Eager PyTorch on CPU, same input and loop: the baseline OpenVINO is compared against."""
+    """PyTorch CPU baseline, timed with the same input and loop as the OpenVINO runs."""
     import torch
 
     from industrial_ad import models
@@ -346,7 +341,7 @@ def _save(out: Path, rows: list[dict[str, Any]], env: dict[str, Any], cfg: dict[
     (out / "results.md").write_text(markdown_table(rows) + "\n", encoding="utf-8")
     if any("aupro" in r and "error" not in r for r in rows):
         viz.save_latency_accuracy(
-            out / "latency_accuracy.png", rows, f"{cfg['model']['name']} — {cfg['data']['category']}"
+            out / "latency_accuracy.png", rows, f"{cfg['model']['name']} / {cfg['data']['category']}"
         )
 
 
@@ -361,6 +356,6 @@ def _log_row(r: dict[str, Any]) -> None:
         r["latency_p50_ms"],
         r["latency_p90_ms"],
         r["fps_batch1"],
-        f"{r['image_auroc']:.3f}" if r.get("image_auroc") is not None else "–",
-        f"{r['aupro']:.3f}" if r.get("aupro") is not None else "–",
+        f"{r['image_auroc']:.3f}" if r.get("image_auroc") is not None else "-",
+        f"{r['aupro']:.3f}" if r.get("aupro") is not None else "-",
     )

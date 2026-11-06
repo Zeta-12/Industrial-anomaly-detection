@@ -3,7 +3,7 @@
 __pycache__/
 *.py[cod]
 
-# Data and models: downloaded / produced locally, never committed
+# Data, checkpoints, exported models
 datasets/
 runs/
 *.ckpt

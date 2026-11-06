@@ -1,7 +1,4 @@
-"""Image- and pixel-level anomaly detection metrics.
-
-Decision rule used everywhere: a sample (or pixel) is anomalous when ``score > threshold``.
-"""
+"""Image and pixel level metrics. Decision rule everywhere: anomalous if score > threshold."""
 
 from __future__ import annotations
 
@@ -13,10 +10,9 @@ from sklearn.metrics import average_precision_score, precision_recall_curve, roc
 
 
 def calibrate_threshold(normal_scores: Sequence[float], max_fpr: float = 0.05) -> float:
-    """Threshold that flags at most `max_fpr` of held-out *normal* samples.
+    """Threshold that flags at most `max_fpr` of the normal calibration scores.
 
-    Only defect-free data is used, so the threshold is chosen without looking at the
-    test set. With few calibration images the achieved FPR is coarse (1 / n steps).
+    With n calibration images the achievable FPR moves in steps of 1/n.
     """
     scores = np.asarray(normal_scores, dtype=np.float64)
     if scores.size == 0:
@@ -27,7 +23,7 @@ def calibrate_threshold(normal_scores: Sequence[float], max_fpr: float = 0.05) -
 
 
 def binary_rates(labels: Sequence[int], scores: Sequence[float], threshold: float) -> dict:
-    """Confusion counts and derived rates at a fixed threshold."""
+    """Confusion matrix counts and rates at `threshold`."""
     y = np.asarray(labels).astype(bool)
     pred = np.asarray(scores, dtype=np.float64) > threshold
     tp = int(np.sum(pred & y))
@@ -50,10 +46,7 @@ def binary_rates(labels: Sequence[int], scores: Sequence[float], threshold: floa
 
 
 def oracle_f1(labels: Sequence[int], scores: Sequence[float]) -> tuple[float, float]:
-    """Best achievable F1 over all thresholds and the threshold that reaches it.
-
-    This peeks at the test labels: report it only as an optimistic upper bound.
-    """
+    """Best F1 over all thresholds, and that threshold. Uses the test labels, so it is only an upper bound."""
     precision, recall, thresholds = precision_recall_curve(labels, scores)
     denom = precision + recall
     f1 = np.divide(2 * precision * recall, denom, out=np.zeros_like(denom), where=denom > 0)
@@ -62,7 +55,7 @@ def oracle_f1(labels: Sequence[int], scores: Sequence[float]) -> tuple[float, fl
 
 
 def image_metrics(labels: Sequence[int], scores: Sequence[float], threshold: float) -> dict:
-    """Threshold-free ranking metrics plus operating-point metrics at `threshold`."""
+    """AUROC / AP, plus precision, recall, F1 and FPR at `threshold`."""
     y = np.asarray(labels, dtype=int)
     s = np.asarray(scores, dtype=np.float64)
     if np.unique(y).size < 2:
@@ -81,7 +74,7 @@ def image_metrics(labels: Sequence[int], scores: Sequence[float], threshold: flo
 def per_defect_detection(
     defects: Sequence[str], scores: Sequence[float], threshold: float, normal: str = "good"
 ) -> dict[str, dict]:
-    """Share of images flagged per defect type (recall; false-positive rate for `normal`)."""
+    """Fraction of flagged images per defect type (recall, or FPR for the `normal` group)."""
     out: dict[str, dict] = {}
     for defect in sorted(set(defects), key=lambda d: (d != normal, d)):
         group = np.asarray([s for d, s in zip(defects, scores, strict=True) if d == defect], dtype=np.float64)
@@ -96,18 +89,17 @@ def per_defect_detection(
 
 
 def pixel_auroc(masks: Sequence[np.ndarray], maps: Sequence[np.ndarray]) -> float:
-    """ROC AUC over every pixel of every image."""
+    """ROC AUC over all pixels of all images."""
     gt = np.concatenate([m.ravel() for m in masks]).astype(bool)
     pred = np.concatenate([a.ravel() for a in maps]).astype(np.float64)
     return float(roc_auc_score(gt, pred))
 
 
 def aupro(masks: Sequence[np.ndarray], maps: Sequence[np.ndarray], fpr_limit: float = 0.3) -> float:
-    """Normalised area under the Per-Region-Overlap curve, integrated up to `fpr_limit`.
+    """Area under the PRO curve up to `fpr_limit`, normalised to [0, 1] (Bergmann et al., IJCV 2021).
 
-    Every connected defect region weighs the same regardless of its size, so a model
-    cannot score well by only segmenting the large defects (Bergmann et al., IJCV 2021).
-    Computed exactly from sorted scores: every distinct pixel score is a threshold.
+    Each connected defect region has the same weight whatever its size. Every distinct pixel score is used as a
+    threshold (no binning).
     """
     if not 0.0 < fpr_limit <= 1.0:
         raise ValueError(f"fpr_limit must be in (0, 1], got {fpr_limit}")
@@ -136,8 +128,8 @@ def aupro(masks: Sequence[np.ndarray], maps: Sequence[np.ndarray], fpr_limit: fl
 
     order = np.argsort(scores, kind="stable")
     region_sorted = scores[order]
-    cum_weight = np.r_[0.0, np.cumsum(weights[order])]  # weight of the k lowest-scoring region pixels
-    # Pixels with score >= t are predicted anomalous; thresholds in decreasing order.
+    cum_weight = np.r_[0.0, np.cumsum(weights[order])]  # cum_weight[k] = weight of the k lowest region pixels
+    # pixel predicted anomalous if score >= t, thresholds in decreasing order
     thresholds = np.unique(np.concatenate([region_sorted, normal]))[::-1]
     pro = cum_weight[-1] - cum_weight[np.searchsorted(region_sorted, thresholds, side="left")]
     fpr = (normal.size - np.searchsorted(normal, thresholds, side="left")) / normal.size

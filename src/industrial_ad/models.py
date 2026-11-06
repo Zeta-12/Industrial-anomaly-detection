@@ -32,13 +32,12 @@ def build_model(cfg: dict[str, Any]):
     cls = _model_class(name)
     params = dict(cfg["model"].get(name, {}))
     pre_processor = cls.configure_pre_processor(image_size=tuple(cfg["data"]["image_size"]))
-    # Scores are read before anomalib's post-processor: it min-max normalises with
-    # validation statistics and clamps to [0, 1], which saturates and ties the scores.
+    # no post-processor: anomalib's min-max normalisation clips the scores to [0, 1] and creates ties
     return cls(**params, pre_processor=pre_processor, post_processor=False, evaluator=False, visualizer=False)
 
 
 def fit(cfg: dict[str, Any], fit_dir: Path, ckpt_path: Path) -> None:
-    """Fit the model on the images in `fit_dir` and save a Lightning checkpoint."""
+    """Fit on the images in `fit_dir` and save a Lightning checkpoint."""
     from anomalib.data import Folder
     from anomalib.engine import Engine
 
@@ -58,8 +57,7 @@ def fit(cfg: dict[str, Any], fit_dir: Path, ckpt_path: Path) -> None:
         accelerator=cfg["train"]["accelerator"],
         logger=False,
         max_epochs=1,
-        # Memory-bank models build their index at the end of the training epoch; validation
-        # is not needed (calibration is done separately on held-out images).
+        # the memory bank is built at the end of the epoch, no validation (threshold is calibrated separately)
         limit_val_batches=0,
         num_sanity_val_steps=0,
     )
@@ -68,7 +66,7 @@ def fit(cfg: dict[str, Any], fit_dir: Path, ckpt_path: Path) -> None:
 
 
 def load(cfg: dict[str, Any], ckpt_path: Path, device: str | None = None):
-    """Restore a fitted model. `load_from_checkpoint` also restores the memory bank."""
+    """Load a fitted model (the memory bank is in the checkpoint)."""
     cls = _model_class(cfg["model"]["name"])
     module = cls.load_from_checkpoint(str(ckpt_path), map_location="cpu", weights_only=False)
     device = device or ("cuda" if torch.cuda.is_available() else "cpu")
@@ -76,7 +74,7 @@ def load(cfg: dict[str, Any], ckpt_path: Path, device: str | None = None):
 
 
 def load_image(path: Path, image_size: Sequence[int]) -> np.ndarray:
-    """RGB uint8 array resized to (height, width) = image_size."""
+    """RGB uint8 image resized to image_size = (height, width)."""
     height, width = image_size
     with Image.open(path) as img:
         return np.asarray(img.convert("RGB").resize((width, height), Image.BILINEAR))
@@ -94,7 +92,7 @@ def load_mask(path: Path | None, image_size: Sequence[int]) -> np.ndarray:
 def score_images(
     module, paths: Sequence[Path], image_size: Sequence[int], batch_size: int = 8, desc: str = "Scoring"
 ) -> tuple[np.ndarray, list[np.ndarray]]:
-    """Raw image scores and anomaly maps (at `image_size`) for every path."""
+    """Raw image scores and anomaly maps (at `image_size`)."""
     device = next(module.parameters()).device
     scores: list[float] = []
     maps: list[np.ndarray] = []

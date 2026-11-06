@@ -1,4 +1,4 @@
-"""Command-line entry point: `iad <command> [options]`."""
+"""`iad` command line."""
 
 from __future__ import annotations
 
@@ -31,11 +31,11 @@ def _categories(args: argparse.Namespace, cfg: dict) -> list[str]:
 
 
 def main(argv: list[str] | None = None) -> None:
-    parser = argparse.ArgumentParser(prog="iad", description="Unsupervised industrial anomaly detection.")
+    parser = argparse.ArgumentParser(prog="iad", description="Unsupervised anomaly detection on MVTec AD.")
     sub = parser.add_subparsers(dest="command", required=True)
 
     common = argparse.ArgumentParser(add_help=False)
-    common.add_argument("--config", type=Path, default=None, help="YAML config (defaults are built in).")
+    common.add_argument("--config", type=Path, default=None, help="YAML config (optional).")
     common.add_argument("--data-root", help="Folder containing the MVTec AD categories.")
     common.add_argument("--output-dir", help="Where runs are written (default: runs/).")
 
@@ -46,7 +46,7 @@ def main(argv: list[str] | None = None) -> None:
     sub.add_parser("download", parents=[common], help="Download MVTec AD (4.9 GB, CC BY-NC-SA 4.0).")
     p_train = sub.add_parser("train", parents=[per_run], help="Fit on defect-free images.")
     p_train.add_argument("--force", action="store_true", help="Refit even if a checkpoint exists.")
-    p_eval = sub.add_parser("evaluate", parents=[per_run], help="Calibrate, score the test set, save figures.")
+    p_eval = sub.add_parser("evaluate", parents=[per_run], help="Calibrate, score the test set, save plots.")
     p_eval.add_argument("--max-test", type=int, help="Stratified test subsample size (0 = all).")
     p_eval.add_argument("--device", help="cpu, cuda, ... (default: cuda if available).")
     p_run = sub.add_parser("run", parents=[per_run], help="train + evaluate.")
@@ -56,20 +56,24 @@ def main(argv: list[str] | None = None) -> None:
     p_sum = sub.add_parser("summary", parents=[common], help="Markdown table over evaluated categories.")
     p_sum.add_argument("--model", default="patchcore", choices=["patchcore", "padim"])
 
-    sub.add_parser("devices", help="OpenVINO devices and power state: run before a benchmark.")
+    sub.add_parser("devices", help="List OpenVINO devices and power state (check before a benchmark).")
     p_exp = sub.add_parser("export", parents=[per_run], help="Export to OpenVINO IR (fp32 / fp16 / int8).")
     p_exp.add_argument("--precision", nargs="+", default=["fp32", "fp16", "int8"], choices=["fp32", "fp16", "int8"])
     p_exp.add_argument("--force", action="store_true", help="Re-export even if the IR exists.")
-    p_bench = sub.add_parser("benchmark", parents=[per_run], help="Latency + accuracy on CPU / iGPU / NPU.")
+    p_bench = sub.add_parser("benchmark", parents=[per_run], help="Latency and accuracy on CPU / iGPU / NPU.")
     p_bench.add_argument("--precision", nargs="+", default=["fp32", "fp16", "int8"], choices=["fp32", "fp16", "int8"])
     p_bench.add_argument(
         "--targets", nargs="+", default=["CPU", "GPU", "GPU:f32", "NPU"], help="DEVICE or DEVICE:<exec precision>."
     )
     p_bench.add_argument("--iterations", type=int, default=100, help="Timed batch-1 inferences per target.")
     p_bench.add_argument("--warmup", type=int, default=10)
-    p_bench.add_argument("--no-accuracy", action="store_true", help="Latency only (skips re-scoring the test set).")
+    p_bench.add_argument("--no-accuracy", action="store_true", help="Latency only, don't re-score the test set.")
     p_bench.add_argument("--no-pytorch", action="store_true", help="Skip the PyTorch CPU baseline.")
-    p_bench.add_argument("--report-only", action="store_true", help="Re-render table and figure from results.json.")
+    p_bench.add_argument("--report-only", action="store_true", help="Regenerate table and plot from results.json.")
+    p_i8 = sub.add_parser("int8-bank", parents=[per_run], help="INT8 backbone + memory bank built from INT8 features.")
+    p_i8.add_argument("--device", default="CPU", help="OpenVINO device for stage 1 (backbone).")
+    p_i8.add_argument("--force", action="store_true", help="Rebuild the INT8 memory bank even if it exists.")
+    p_i8.add_argument("--iterations", type=int, default=50)
 
     args = parser.parse_args(argv)
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s", datefmt="%H:%M:%S")
@@ -100,6 +104,11 @@ def main(argv: list[str] | None = None) -> None:
             from industrial_ad import export
 
             export.export(run_cfg, args.precision, force=args.force)
+        if args.command == "int8-bank":
+            from industrial_ad import int8_bank
+
+            rows = int8_bank.run(run_cfg, device=args.device, force=args.force, iterations=args.iterations)
+            print(int8_bank.markdown_table(rows))
         if args.command == "benchmark":
             from industrial_ad import benchmark
 
@@ -130,7 +139,7 @@ def _print_devices() -> None:
         )
     print(f"  on AC power: {env['on_ac_power']} | battery saver: {env['battery_saver']}")
     if env["on_ac_power"] is False or env["battery_saver"]:
-        print("  WARNING: plug the laptop in and disable battery saver before benchmarking.")
+        print("  WARNING: plug in the laptop and turn off battery saver before running a benchmark.")
 
 
 if __name__ == "__main__":

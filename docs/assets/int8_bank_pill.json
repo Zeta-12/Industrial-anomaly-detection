@@ -1,0 +1,237 @@
+{
+  "environment": {
+    "openvino": "2026.4.1-22982-e213a147257-releases/2026/4",
+    "python": "3.12.10",
+    "os": "Windows-11-10.0.26200-SP0",
+    "devices": {
+      "CPU": {
+        "FULL_DEVICE_NAME": "Intel(R) Core(TM) Ultra 5 235U"
+      },
+      "GPU": {
+        "FULL_DEVICE_NAME": "Intel(R) Graphics (iGPU)",
+        "GPU_DEVICE_TOTAL_MEM_SIZE": "8421130240"
+      },
+      "NPU": {
+        "FULL_DEVICE_NAME": "Intel(R) AI Boost",
+        "NPU_DRIVER_VERSION": "1004778"
+      }
+    },
+    "on_ac_power": true,
+    "battery_saver": false
+  },
+  "rows": [
+    {
+      "variant": "FP32 features + FP32 bank",
+      "features": "fp32",
+      "bank": "fp32",
+      "bank_shape": [
+        24576,
+        1536
+      ],
+      "image_threshold": 35.15838623046875,
+      "image_auroc": 0.9489907255864704,
+      "image_ap": 0.9906458894980604,
+      "pixel_auroc": 0.9807386700530323,
+      "aupro": 0.9398884380646221,
+      "recall": 0.9078014184397163,
+      "fpr": 0.11538461538461539,
+      "per_defect": {
+        "good": {
+          "n": 26,
+          "flagged": 3,
+          "rate": 0.11538461538461539,
+          "kind": "false_positive_rate"
+        },
+        "color": {
+          "n": 25,
+          "flagged": 20,
+          "rate": 0.8,
+          "kind": "recall"
+        },
+        "combined": {
+          "n": 17,
+          "flagged": 17,
+          "rate": 1.0,
+          "kind": "recall"
+        },
+        "contamination": {
+          "n": 21,
+          "flagged": 20,
+          "rate": 0.9523809523809523,
+          "kind": "recall"
+        },
+        "crack": {
+          "n": 26,
+          "flagged": 21,
+          "rate": 0.8076923076923077,
+          "kind": "recall"
+        },
+        "faulty_imprint": {
+          "n": 19,
+          "flagged": 18,
+          "rate": 0.9473684210526315,
+          "kind": "recall"
+        },
+        "pill_type": {
+          "n": 9,
+          "flagged": 9,
+          "rate": 1.0,
+          "kind": "recall"
+        },
+        "scratch": {
+          "n": 24,
+          "flagged": 23,
+          "rate": 0.9583333333333334,
+          "kind": "recall"
+        }
+      },
+      "stage1_device": "CPU",
+      "stage1_p50_ms": 83.96590000484139,
+      "stage2_p50_ms": 325.7016000134172,
+      "spearman_vs_pytorch": 1.0,
+      "max_abs_score_diff_vs_pytorch": 0.007743852294922249
+    },
+    {
+      "variant": "INT8 features + FP32 bank",
+      "features": "int8",
+      "bank": "fp32",
+      "bank_shape": [
+        24576,
+        1536
+      ],
+      "image_threshold": 38.79405212402344,
+      "image_auroc": 0.9350791052918713,
+      "image_ap": 0.988389302849413,
+      "pixel_auroc": 0.9517650294067811,
+      "aupro": 0.881893459800159,
+      "recall": 0.8865248226950354,
+      "fpr": 0.07692307692307693,
+      "per_defect": {
+        "good": {
+          "n": 26,
+          "flagged": 2,
+          "rate": 0.07692307692307693,
+          "kind": "false_positive_rate"
+        },
+        "color": {
+          "n": 25,
+          "flagged": 19,
+          "rate": 0.76,
+          "kind": "recall"
+        },
+        "combined": {
+          "n": 17,
+          "flagged": 17,
+          "rate": 1.0,
+          "kind": "recall"
+        },
+        "contamination": {
+          "n": 21,
+          "flagged": 20,
+          "rate": 0.9523809523809523,
+          "kind": "recall"
+        },
+        "crack": {
+          "n": 26,
+          "flagged": 20,
+          "rate": 0.7692307692307693,
+          "kind": "recall"
+        },
+        "faulty_imprint": {
+          "n": 19,
+          "flagged": 17,
+          "rate": 0.8947368421052632,
+          "kind": "recall"
+        },
+        "pill_type": {
+          "n": 9,
+          "flagged": 9,
+          "rate": 1.0,
+          "kind": "recall"
+        },
+        "scratch": {
+          "n": 24,
+          "flagged": 23,
+          "rate": 0.9583333333333334,
+          "kind": "recall"
+        }
+      },
+      "stage1_device": "CPU",
+      "stage1_p50_ms": 22.344400000292808,
+      "stage2_p50_ms": 324.5155999902636,
+      "spearman_vs_pytorch": 0.9711884320859144,
+      "max_abs_score_diff_vs_pytorch": 7.26187946508789
+    },
+    {
+      "variant": "INT8 features + INT8 bank",
+      "features": "int8",
+      "bank": "int8",
+      "bank_shape": [
+        24576,
+        1536
+      ],
+      "image_threshold": 35.827152252197266,
+      "image_auroc": 0.9443535188216039,
+      "image_ap": 0.9899247897035963,
+      "pixel_auroc": 0.9789504434840789,
+      "aupro": 0.9344848454120751,
+      "recall": 0.900709219858156,
+      "fpr": 0.11538461538461539,
+      "per_defect": {
+        "good": {
+          "n": 26,
+          "flagged": 3,
+          "rate": 0.11538461538461539,
+          "kind": "false_positive_rate"
+        },
+        "color": {
+          "n": 25,
+          "flagged": 18,
+          "rate": 0.72,
+          "kind": "recall"
+        },
+        "combined": {
+          "n": 17,
+          "flagged": 17,
+          "rate": 1.0,
+          "kind": "recall"
+        },
+        "contamination": {
+          "n": 21,
+          "flagged": 20,
+          "rate": 0.9523809523809523,
+          "kind": "recall"
+        },
+        "crack": {
+          "n": 26,
+          "flagged": 20,
+          "rate": 0.7692307692307693,
+          "kind": "recall"
+        },
+        "faulty_imprint": {
+          "n": 19,
+          "flagged": 19,
+          "rate": 1.0,
+          "kind": "recall"
+        },
+        "pill_type": {
+          "n": 9,
+          "flagged": 9,
+          "rate": 1.0,
+          "kind": "recall"
+        },
+        "scratch": {
+          "n": 24,
+          "flagged": 24,
+          "rate": 1.0,
+          "kind": "recall"
+        }
+      },
+      "stage1_device": "CPU",
+      "stage1_p50_ms": 22.606749989790842,
+      "stage2_p50_ms": 330.97204999648966,
+      "spearman_vs_pytorch": 0.9799617632205471,
+      "max_abs_score_diff_vs_pytorch": 3.3284569001464845
+    }
+  ]
+}

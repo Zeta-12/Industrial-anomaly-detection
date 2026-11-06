@@ -1,4 +1,4 @@
-"""Train / evaluate / summarise. Every number in `metrics.json` comes from this module."""
+"""train, evaluate and summary commands."""
 
 from __future__ import annotations
 
@@ -62,11 +62,9 @@ def evaluate(cfg: dict[str, Any], device: str | None = None) -> dict[str, Any]:
     ecfg = cfg["evaluation"]
     module = models.load(cfg, ckpt, device)
 
-    # 1. Calibration on held-out defect-free images only.
     calib_paths = calibration_paths(cfg)
     calib_scores, calib_maps = models.score_images(module, calib_paths, size, ecfg["batch_size"], desc="Calibration")
 
-    # 2. Test set (stratified subsample only if requested).
     samples = test_samples(cfg)
     start = time.perf_counter()
     scores, maps = models.score_images(module, [s.image_path for s in samples], size, ecfg["batch_size"], desc="Test")
@@ -99,7 +97,7 @@ def evaluate(cfg: dict[str, Any], device: str | None = None) -> dict[str, Any]:
 
 
 def calibration_paths(cfg: dict[str, Any]) -> list[Path]:
-    """Held-out defect-free training images recorded at fitting time."""
+    """Training images held out for calibration (saved in split.json at fit time)."""
     split = json.loads((run_dir(cfg) / "split.json").read_text(encoding="utf-8"))
     return [category_dir(cfg) / "train" / NORMAL / name for name in split["calibration"]]
 
@@ -117,7 +115,7 @@ def detection_metrics(
     masks: list[np.ndarray],
     ecfg: dict[str, Any],
 ) -> dict[str, Any]:
-    """Thresholds from calibration scores only, then image, pixel and per-defect metrics."""
+    """Image, pixel and per-defect metrics, with thresholds taken from the calibration scores."""
     image_threshold = M.calibrate_threshold(calib_scores, ecfg["max_fpr"])
     pixel_threshold = M.calibrate_threshold([m.max() for m in calib_maps], ecfg["max_fpr"])
     labels = [s.label for s in samples]
@@ -140,7 +138,7 @@ def detection_metrics(
 
 
 def summarize(output_dir: Path, model: str) -> str:
-    """Markdown table over every evaluated category of `model`."""
+    """Markdown table with all the evaluated categories of `model`."""
     rows = []
     for path in sorted((output_dir / model).glob("*/metrics.json")):
         m = json.loads(path.read_text(encoding="utf-8"))
@@ -184,9 +182,6 @@ def summarize(output_dir: Path, model: str) -> str:
     return table
 
 
-# ── helpers ──────────────────────────────────────────────────────────────────
-
-
 def _environment() -> dict[str, str]:
     import anomalib
     import torch
@@ -213,13 +208,12 @@ def _write_scores(path: Path, samples: list[Sample], scores: np.ndarray, thresho
 def _write_figures(out, cfg, samples, scores, maps, masks, image_thr, pixel_thr, pixel_low) -> None:
     from industrial_ad import models
 
-    title = f"{cfg['model']['name']} — {cfg['data']['category']}"
+    title = f"{cfg['model']['name']} / {cfg['data']['category']}"
     labels = [s.label for s in samples]
     viz.save_score_distribution(out / "score_distribution.png", labels, scores, image_thr, title)
     viz.save_curves(out / "curves.png", labels, scores, title)
 
-    # Error analysis: per defect type, the best-detected and the hardest example;
-    # for normal images, the highest-scoring one (worst false-positive candidate).
+    # for the error analysis: highest and lowest score of each defect type, highest score among good images
     selected: dict[int, str] = {}
     for defect in sorted({s.defect for s in samples}):
         idx = [i for i, s in enumerate(samples) if s.defect == defect]
@@ -241,13 +235,13 @@ def _write_figures(out, cfg, samples, scores, maps, masks, image_thr, pixel_thr,
             models.load_image(s.image_path, cfg["data"]["image_size"]),
             viz.shared_scale(maps[i], pixel_low, pixel_thr),
             masks[i] if s.label else None,
-            f"{s.defect} / {s.image_path.stem} — score {scores[i]:.2f} (threshold {image_thr:.2f}) → {verdict}",
+            f"{s.defect}/{s.image_path.stem} | score {scores[i]:.2f} (threshold {image_thr:.2f}) | {verdict}",
         )
 
 
 def _log_summary(r: dict[str, Any]) -> None:
     img, pix = r["image"], r["pixel"]
-    log.info("%s / %s — %d test images", r["model"], r["category"], r["n_test"])
+    log.info("%s / %s, %d test images", r["model"], r["category"], r["n_test"])
     log.info(
         "  image AUROC %.4f | AP %.4f | pixel AUROC %.4f | AUPRO %.4f",
         img["auroc"],
@@ -262,6 +256,6 @@ def _log_summary(r: dict[str, Any]) -> None:
         img["fpr"],
         img["f1"],
     )
-    log.info("  oracle F1 (threshold tuned on test, upper bound): %.3f", img["oracle_f1"])
+    log.info("  oracle F1 (threshold tuned on the test set): %.3f", img["oracle_f1"])
     for defect, d in r["per_defect"].items():
         log.info("    %-16s %-20s %5.1f%%  (%d/%d)", defect, d["kind"], 100 * d["rate"], d["flagged"], d["n"])

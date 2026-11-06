@@ -15,7 +15,7 @@ def test_index_lists_normal_first_with_masks(mvtec_category):
         assert (s.mask_path is None) == (s.defect == "good")
 
 
-def test_index_fails_loudly_on_missing_mask(mvtec_category):
+def test_index_raises_on_missing_mask(mvtec_category):
     (mvtec_category / "ground_truth" / "crack" / "000_mask.png").unlink()
     with pytest.raises(FileNotFoundError, match="mask"):
         index_test_set(mvtec_category)
@@ -39,7 +39,7 @@ def test_materialize_exposes_exactly_the_subset(mvtec_category, tmp_path):
     fit, _ = split_train(mvtec_category, calib_ratio=0.2, seed=0)
     dest = materialize(fit, tmp_path / "fit" / "good")
     assert sorted(p.name for p in dest.iterdir()) == sorted(p.name for p in fit)
-    materialize(fit[:3], dest)  # re-running replaces the previous content
+    materialize(fit[:3], dest)  # replaces the old content
     assert len(list(dest.iterdir())) == 3
 
 
@@ -48,7 +48,7 @@ def test_stratified_subset_keeps_every_defect_type(mvtec_category):
     subset = stratified_subset(samples, max_samples=7, seed=0)
     counts = Counter(s.defect for s in subset)
     assert len(subset) == 7
-    assert set(counts) == set(DEFECTS)  # the old "first N images" kept only good + one defect
+    assert set(counts) == set(DEFECTS)
     assert subset == [s for s in samples if s in subset]  # original order preserved
 
 

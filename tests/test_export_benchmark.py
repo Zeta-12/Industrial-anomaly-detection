@@ -16,7 +16,7 @@ MEAN, STD = [0.485, 0.456, 0.406], [0.229, 0.224, 0.225]
 
 
 class TinyPatchModel(nn.Module):
-    """PatchCore-shaped toy: conv features, nearest neighbour in a memory bank via ||x||^2 + ||y||^2 - 2 x.y."""
+    """Small PatchCore-like model: conv features + nearest neighbour in a random bank."""
 
     def __init__(self) -> None:
         super().__init__()
@@ -143,7 +143,7 @@ ROWS = [
 ]
 
 
-def test_markdown_table_reports_failures_instead_of_hiding_them():
+def test_markdown_table_shows_failed_rows():
     table = benchmark.markdown_table(ROWS)
     lines = table.splitlines()
     assert len(lines) == 2 + len(ROWS)

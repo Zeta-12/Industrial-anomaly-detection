@@ -1,4 +1,4 @@
-"""Figures: per-image panels, score distributions, ROC / PR curves and the latency / accuracy trade-off."""
+"""Plots: per-image panels, score histograms, ROC / PR curves, latency vs accuracy."""
 
 from __future__ import annotations
 
@@ -15,26 +15,24 @@ from matplotlib.lines import Line2D  # noqa: E402
 from matplotlib.ticker import FixedLocator, FuncFormatter, NullFormatter  # noqa: E402
 from sklearn.metrics import precision_recall_curve, roc_curve  # noqa: E402
 
-# Validated categorical palette (fixed order, CVD-checked on the light surface). Contrast of the last two
-# slots is below 3:1, hence the redundant encodings: marker shapes, direct labels and the markdown table.
-SURFACE = "#fcfcfb"
+BACKGROUND = "#fcfcfb"
 TEXT = "#0b0b0b"
-TEXT_SECONDARY = "#52514e"
+TEXT_LIGHT = "#52514e"
 GRID = "#e4e3df"
+# colour = device, marker = weight precision, grey diamond = PyTorch
 TARGET_COLORS = {"CPU": "#2a78d6", "GPU": "#eb6834", "GPU:f32": "#1baf7a", "NPU": "#eda100"}
-REFERENCE_COLOR = TEXT_SECONDARY  # PyTorch baseline: neutral, it is the reference, not a competitor
 WEIGHT_MARKERS = {"fp32": "o", "fp16": "s", "int8": "^"}
 
 
 def save_latency_accuracy(path: Path, rows: Sequence[dict[str, Any]], title: str) -> None:
-    """Small multiples sharing the latency axis: image AUROC and AUPRO against batch-1 p50 latency."""
+    """Image AUROC (left) and AUPRO (right) vs p50 latency, one point per benchmark row."""
     points = [r for r in rows if "error" not in r and "accuracy_error" not in r and r.get("aupro") is not None]
     latencies = [r["latency_p50_ms"] for r in points]
     lo, hi = min(latencies), max(latencies)
     ticks = [t for t in (1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000) if lo / 1.6 <= t <= hi * 1.6]
-    fig, axes = plt.subplots(1, 2, figsize=(10, 4), sharex=True, facecolor=SURFACE)
+    fig, axes = plt.subplots(1, 2, figsize=(10, 4), sharex=True, facecolor=BACKGROUND)
     for ax, key, label in ((axes[0], "image_auroc", "Image AUROC"), (axes[1], "aupro", "AUPRO @ 0.3 FPR")):
-        ax.set_facecolor(SURFACE)
+        ax.set_facecolor(BACKGROUND)
         for r in points:
             is_ref = r["runtime"] == "PyTorch"
             ax.scatter(
@@ -42,12 +40,13 @@ def save_latency_accuracy(path: Path, rows: Sequence[dict[str, Any]], title: str
                 r[key],
                 s=90,
                 marker="D" if is_ref else WEIGHT_MARKERS.get(r["weights"], "o"),
-                color=REFERENCE_COLOR if is_ref else TARGET_COLORS.get(r["target"], TEXT_SECONDARY),
-                edgecolors=SURFACE,
+                color=TEXT_LIGHT if is_ref else TARGET_COLORS.get(r["target"], TEXT_LIGHT),
+                edgecolors=BACKGROUND,
                 linewidths=1.5,
                 zorder=3,
             )
-            if is_ref:  # points cluster too tightly for per-point labels: legend + table carry identity
+            # the OpenVINO points overlap too much to label them, only the reference gets a label
+            if is_ref:
                 ax.annotate(
                     "PyTorch (reference)",
                     (r["latency_p50_ms"], r[key]),
@@ -56,37 +55,35 @@ def save_latency_accuracy(path: Path, rows: Sequence[dict[str, Any]], title: str
                     ha="center",
                     va="top",
                     fontsize=7,
-                    color=TEXT_SECONDARY,
+                    color=TEXT_LIGHT,
                 )
         ax.set_xscale("log")
         ax.set_xlim(lo / 1.5, hi * 1.5)
         ax.xaxis.set_major_locator(FixedLocator(ticks))
         ax.xaxis.set_major_formatter(FuncFormatter(lambda v, _: f"{v:g}"))
         ax.xaxis.set_minor_formatter(NullFormatter())
-        ax.set_xlabel("batch-1 latency, p50 (ms, log scale) — lower is better", color=TEXT, fontsize=9)
+        ax.set_xlabel("p50 latency, batch 1 (ms, log scale)", color=TEXT, fontsize=9)
         ax.set_ylabel(label, color=TEXT, fontsize=9)
         ax.grid(True, which="both", color=GRID, linewidth=0.6, zorder=0)
-        ax.tick_params(colors=TEXT_SECONDARY, labelsize=8)
+        ax.tick_params(colors=TEXT_LIGHT, labelsize=8)
         for spine in ax.spines.values():
             spine.set_color(GRID)
     devices = [t for t in TARGET_COLORS if any(r["target"] == t and r["runtime"] != "PyTorch" for r in points)]
     weights = [w for w in WEIGHT_MARKERS if any(r.get("weights") == w and r["runtime"] != "PyTorch" for r in points)]
-    handles = [Line2D([], [], marker="D", ls="", color=REFERENCE_COLOR, label="PyTorch CPU (reference)")]
+    handles = [Line2D([], [], marker="D", ls="", color=TEXT_LIGHT, label="PyTorch CPU (reference)")]
     handles += [Line2D([], [], marker="o", ls="", color=TARGET_COLORS[t], label=f"OpenVINO {t}") for t in devices]
-    handles += [Line2D([], [], marker=WEIGHT_MARKERS[w], ls="", color=TEXT_SECONDARY, label=w) for w in weights]
+    handles += [Line2D([], [], marker=WEIGHT_MARKERS[w], ls="", color=TEXT_LIGHT, label=w) for w in weights]
     fig.legend(handles=handles, loc="lower center", ncol=len(handles), frameon=False, fontsize=8)
     fig.suptitle(title, color=TEXT, fontsize=10)
     fig.tight_layout(rect=(0, 0.08, 1, 1))
-    fig.savefig(path, dpi=130, facecolor=SURFACE)
+    fig.savefig(path, dpi=130, facecolor=BACKGROUND)
     plt.close(fig)
 
 
 def shared_scale(amap: np.ndarray, low: float, threshold: float) -> np.ndarray:
-    """Map scores to [0, 1] on a scale shared by every image.
+    """Rescale an anomaly map with the same scale for all images: `low` -> 0, `threshold` -> 0.5.
 
-    `low` maps to 0 and `threshold` to 0.5, so anything warmer than mid-scale exceeds the
-    decision threshold. Per-image min-max normalisation would paint hot spots on every
-    image, including defect-free ones.
+    With per-image min-max every image gets a hot spot, even the good ones.
     """
     high = threshold + (threshold - low)
     return np.clip((amap - low) / max(high - low, 1e-12), 0.0, 1.0)
@@ -99,7 +96,7 @@ def save_panel(
     gt_mask: np.ndarray | None,
     title: str,
 ) -> None:
-    """Input | heat-map overlay with ground-truth contour | predicted region."""
+    """Input, heat map with the ground-truth contour, predicted region."""
     fig, axes = plt.subplots(1, 3, figsize=(9, 3.3))
     axes[0].imshow(image)
     axes[0].set_title("Input", fontsize=9)

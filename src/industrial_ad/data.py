@@ -1,12 +1,10 @@
-"""Indexing and splitting of datasets stored in MVTec AD layout.
+"""Datasets in MVTec AD layout:
 
-Expected layout for one category::
-
-    <root>/<category>/
-        train/good/*.png                 defect-free images (the only training data)
-        test/good/*.png                  defect-free test images
-        test/<defect_type>/*.png         defective test images
-        ground_truth/<defect_type>/<stem>_mask.png
+<root>/<category>/
+    train/good/*.png
+    test/good/*.png
+    test/<defect_type>/*.png
+    ground_truth/<defect_type>/<stem>_mask.png
 """
 
 from __future__ import annotations
@@ -43,23 +41,20 @@ NORMAL = "good"
 
 @dataclass(frozen=True)
 class Sample:
-    """One evaluation image and its ground truth."""
-
     image_path: Path
     label: int  # 0 = normal, 1 = anomalous
     defect: str  # "good" or the defect type
-    mask_path: Path | None = None  # None for normal images (empty mask)
+    mask_path: Path | None = None  # None for normal images
 
 
 def list_images(directory: Path) -> list[Path]:
-    """Sorted image files directly inside `directory`."""
     if not directory.is_dir():
         raise FileNotFoundError(f"Directory not found: {directory}")
     return sorted(p for p in directory.iterdir() if p.suffix.lower() in IMAGE_SUFFIXES)
 
 
 def index_test_set(category_dir: Path) -> list[Sample]:
-    """Return every test image with its label and mask, normal images first."""
+    """All test images with label and mask path, good images first."""
     test_dir = category_dir / "test"
     gt_dir = category_dir / "ground_truth"
     if not test_dir.is_dir():
@@ -83,11 +78,7 @@ def index_test_set(category_dir: Path) -> list[Sample]:
 
 
 def split_train(category_dir: Path, calib_ratio: float, seed: int) -> tuple[list[Path], list[Path]]:
-    """Split train/good into a fitting set and a held-out calibration set.
-
-    The calibration images are never seen during fitting; their scores are used to
-    choose the decision threshold, so the test set is not used for any tuning.
-    """
+    """Split train/good into (fit, calibration). The calibration images are only used to set the threshold."""
     if not 0.0 < calib_ratio < 1.0:
         raise ValueError(f"calib_ratio must be in (0, 1), got {calib_ratio}")
     images = list_images(category_dir / "train" / NORMAL)
@@ -101,7 +92,7 @@ def split_train(category_dir: Path, calib_ratio: float, seed: int) -> tuple[list
 
 
 def materialize(paths: Sequence[Path], dest: Path) -> Path:
-    """Expose a subset of images as a folder, using hard links (copies as a fallback)."""
+    """Put a subset of images in its own folder (hard links, or copies if links fail)."""
     if dest.exists():
         shutil.rmtree(dest)
     dest.mkdir(parents=True)
@@ -115,9 +106,9 @@ def materialize(paths: Sequence[Path], dest: Path) -> Path:
 
 
 def stratified_subset(samples: Sequence[Sample], max_samples: int, seed: int) -> list[Sample]:
-    """Subsample while keeping every defect type represented, in proportion to its size.
+    """Subsample proportionally to each defect type, with at least one image per type. Keeps the original order.
 
-    `max_samples <= 0` keeps everything. Original ordering is preserved.
+    `max_samples <= 0` returns all samples.
     """
     if max_samples <= 0 or max_samples >= len(samples):
         return list(samples)
@@ -128,7 +119,7 @@ def stratified_subset(samples: Sequence[Sample], max_samples: int, seed: int) ->
     if max_samples < len(groups):
         raise ValueError(f"max_samples={max_samples} cannot cover the {len(groups)} defect types")
 
-    # Largest-remainder allocation with at least one sample per group.
+    # largest remainder method, min 1 per group
     exact = {k: max_samples * len(v) / len(samples) for k, v in groups.items()}
     quotas = {k: max(1, int(exact[k])) for k in groups}
     by_remainder = sorted(groups, key=lambda k: exact[k] - int(exact[k]), reverse=True)

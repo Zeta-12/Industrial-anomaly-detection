@@ -2,32 +2,31 @@
 
 [![CI](https://github.com/Zeta-12/industrial-anomaly-detection/actions/workflows/ci.yml/badge.svg)](https://github.com/Zeta-12/industrial-anomaly-detection/actions/workflows/ci.yml)
 
-Unsupervised visual inspection for manufacturing: the model is fitted **on defect-free images only** and must find
-cracks, contamination, scratches or wrong imprints it has never seen, and show *where* they are.
+Unsupervised defect detection for visual inspection. The model only sees defect-free images during fitting, then it
+has to flag cracks, contamination, scratches or wrong imprints on new parts and show where they are.
 
 ![PatchCore localising a contamination it has never seen during fitting](docs/assets/pill_contamination_detected.png)
 
-The modelling uses well-known methods (PatchCore, PaDiM via [anomalib](https://github.com/open-edge-platform/anomalib)).
-The work in this repository is in the **evaluation protocol**: many public anomaly-detection demos tune their
-decision threshold on the test set or report a single AUROC. Here every operating-point number comes from a
-threshold chosen without looking at a single defective image.
+The models are standard (PatchCore and PaDiM, through [anomalib](https://github.com/open-edge-platform/anomalib)).
+Most of the work here went into the evaluation. A lot of anomaly detection demos choose their threshold on the test
+set or only report image AUROC. Here the decision threshold is calibrated on held-out good images only, and the
+localisation is measured at pixel level.
 
 ## Results
 
-PatchCore (WideResNet-50-2, `layer2`+`layer3`, 10 % coreset) on the MVTec AD **pill** category, full test set
-(26 good / 141 defective), CPU only. The 15-category benchmark is in progress (see [Roadmap](#roadmap)).
+PatchCore (WideResNet-50-2, `layer2` + `layer3`, 10 % coreset) on the MVTec AD **pill** category, full test set
+(26 good / 141 defective images), CPU only. The other 14 categories are in progress (see [Roadmap](#roadmap)).
 
 | Category | Image AUROC | Image AP | Pixel AUROC | AUPRO@0.3 | Recall @cal. | FPR @cal. | Oracle F1* |
 |---|---|---|---|---|---|---|---|
 | pill | 0.949 | 0.991 | 0.981 | 0.940 | 0.908 | 0.115 | 0.950 |
 
-\*Oracle F1 uses the best threshold *on the test set*: an optimistic upper bound, not an operating point.
+\*Oracle F1 uses the best threshold on the test set, so it is an upper bound and not a real operating point.
 
-**Operating point.** With the threshold calibrated to allow 5 % false alarms on held-out normal pills, the model
-catches **128 of 141 defective pills (91 %)**. On the test set it raises 3 false alarms on 26 good pills (11.5 %),
-above the 5 % target: with 27 calibration images the achieved false-alarm rate is noisy (see
-[Limitations](#limitations)). The gap between calibrated F1 (0.941) and oracle F1 (0.950) is what tuning on the test
-set would have hidden.
+With the threshold set for 5 % false alarms on the held-out good pills, the model detects 128 of the 141 defective
+pills (91 %). On the test set it gives 3 false alarms out of 26 good pills (11.5 %), which is above the 5 % target:
+with only 27 calibration images the actual false alarm rate is noisy (see [Limitations](#limitations)). Calibrated
+F1 is 0.941 against 0.950 for the oracle, and this gap is exactly what tuning on the test set would hide.
 
 | Defect type | Detected |
 |---|---|
@@ -46,85 +45,109 @@ set would have hidden.
 
 | | |
 |---|---|
-| ![Missed colour defect](docs/assets/pill_color_missed.png) | **Missed colour defect.** The defect is a dot of a few pixels at 256 × 256, with the same hue as the red speckles every normal pill has. It is a resolution limit: PatchCore features have a stride of 8 px. Next step: higher input resolution or tiling. |
-| ![Missed crack](docs/assets/pill_crack_missed.png) | **Missed crack.** Faint, low-contrast crack on the pill edge, where normal variability is highest. Colour and crack are the two weakest defect types (80–81 %). |
-| ![False alarm](docs/assets/pill_false_positive.png) | **False alarm.** The highest-scoring good pill: dense speckles around the "FF" imprint look unusual to the model. |
-| ![Background spot](docs/assets/pill_crack_background_spot.png) | **Right decision, partly wrong reason.** The crack is found, but a second hot spot sits on the black background. Masking the background (pill segmentation) would remove this class of false alarm. |
+| ![Missed colour defect](docs/assets/pill_color_missed.png) | Missed colour defect: a dot of a few pixels at 256x256, with the same colour as the red speckles that every normal pill has. PatchCore features have a stride of 8 px, so it is a resolution problem. A higher input resolution or tiling should help. |
+| ![Missed crack](docs/assets/pill_crack_missed.png) | Missed crack: faint and low contrast, on the edge of the pill where the normal variation is the highest. Colour and crack are the two weakest defect types (80-81 %). |
+| ![False alarm](docs/assets/pill_false_positive.png) | False alarm: the good pill with the highest score. The dense speckles around the "FF" imprint look unusual to the model. |
+| ![Background spot](docs/assets/pill_crack_background_spot.png) | The crack is detected, but there is a second hot spot on the black background. Masking the background (segmenting the pill first) would remove this kind of false alarm. |
 
-**Compute (Intel Core Ultra 5 235U, CPU only).** Fitting takes 24 min, almost all of it in coreset subsampling.
-Scoring takes 0.55 s per image end to end, dominated by the nearest-neighbour search in the memory bank.
+Compute (Intel Core Ultra 5 235U, CPU only): fitting takes 24 min, almost all of it in the coreset subsampling.
+Scoring takes 0.55 s per image end to end, mostly in the nearest neighbour search.
 
-## Edge deployment: CPU, integrated GPU and NPU
+## Edge deployment: CPU, iGPU and NPU
 
-The fitted model is exported to OpenVINO and benchmarked on the three engines of one laptop chip (Intel Core Ultra
-5 235U): CPU, integrated GPU and NPU. **Accuracy is re-measured on every target**, not assumed:
+I exported the fitted model to OpenVINO and benchmarked it on the three compute units of the same laptop chip (Intel
+Core Ultra 5 235U). Accuracy is measured again on each target, because two things can change it:
 
-- GPU and NPU execute in FP16 by default, and PatchCore scores are distances computed as
-  ‖x‖² + ‖y‖² − 2·x·y against a 24 k-vector memory bank, a formula prone to cancellation in half precision.
-  `GPU:f32` (same iGPU forced to FP32) separates the effect of execution precision from that of the hardware.
-- INT8 is post-training quantization (NNCF) calibrated on the 27 held-out **defect-free** images, so no defect is
-  seen. The nearest-neighbour MatMul stays in floating point; only the convolutional backbone is quantized.
+- The GPU and the NPU run in FP16 by default, and the PatchCore score is a distance computed as
+  `||x||^2 + ||y||^2 - 2 x.y` against a memory bank of 24k vectors, which can lose precision in FP16. `GPU:f32` is
+  the same iGPU forced to FP32, to separate the effect of the precision from the effect of the hardware.
+- INT8 is post-training quantization with NNCF, calibrated on the 27 held-out good images (no defect is used). This
+  first export only excluded the nearest neighbour MatMul from quantization, which was not enough (see point 3 and
+  the [INT8 section](#int8-backbone-and-int8-memory-bank)).
 
 | Protocol | |
 |---|---|
-| Latency | batch 1, synchronous, `PERFORMANCE_HINT=LATENCY`, 10 warm-up + 100 timed runs; p50 / p90 / p99 reported |
-| Accuracy | full test set through the compiled model, same calibrated-threshold protocol as the PyTorch reference |
-| Agreement | Spearman ρ and max absolute score difference vs PyTorch, image by image |
-| Baseline | eager PyTorch FP32 on the same CPU, same input, same loop |
-| Conditions | AC power and battery saver checked and recorded (`iad devices`); failures are reported, not dropped |
+| Latency | batch 1, synchronous, `PERFORMANCE_HINT=LATENCY`, 10 warm-up + 100 timed runs, p50 / p90 / p99 |
+| Accuracy | full test set through the compiled model, same calibrated threshold protocol as PyTorch |
+| Agreement | Spearman correlation and max absolute score difference with PyTorch, per image |
+| Baseline | PyTorch FP32 (eager) on the same CPU, same input, same loop |
+| Conditions | AC power and battery saver checked and saved with the results (`iad devices`), failed runs are kept in the table |
 
 ### Results: pill, Intel Core Ultra 5 235U, on AC power
 
 ![Image AUROC and AUPRO against batch-1 latency for every runtime, device and precision](docs/assets/benchmark_pill_latency_accuracy.png)
 
-| Runtime · target · weights | Exec. | p50 (ms) | FPS | Image AUROC | AUPRO | Recall @cal. | Spearman vs PyTorch |
+| Runtime / device / weights | Exec. | p50 (ms) | FPS | Image AUROC | AUPRO | Recall @cal. | Spearman vs PyTorch |
 |---|---|---|---|---|---|---|---|
-| PyTorch · CPU · fp32 (reference) | f32 | 424.8 | 2.3 | 0.949 | 0.940 | 0.908 | 1.000 |
-| OpenVINO · CPU · fp16 | f32 | 273.2 | 3.7 | 0.950 | 0.940 | 0.908 | 1.000 |
-| **OpenVINO · iGPU · fp16** | f16 | **123.3** | **8.1** | **0.950** | **0.940** | 0.901 | 0.999 |
-| OpenVINO · iGPU forced FP32 · fp16 | f32 | 253.2 | 3.9 | 0.950 | 0.940 | 0.908 | 1.000 |
-| OpenVINO · NPU · fp16 | f16 | 482.2 | 2.1 | 0.949 | 0.940 | 0.908 | 1.000 |
-| OpenVINO · CPU · int8 | f32 | 230.7 | 4.4 | 0.859 | 0.835 | 0.610 | 0.878 |
-| OpenVINO · NPU · int8 | f16 | 438.5 | 2.3 | 0.438 | 0.159 | 0.043 | −0.066 |
+| PyTorch / CPU / fp32 (reference) | f32 | 424.8 | 2.3 | 0.949 | 0.940 | 0.908 | 1.000 |
+| OpenVINO / CPU / fp16 | f32 | 273.2 | 3.7 | 0.950 | 0.940 | 0.908 | 1.000 |
+| **OpenVINO / iGPU / fp16** | f16 | **123.3** | **8.1** | **0.950** | **0.940** | 0.901 | 0.999 |
+| OpenVINO / iGPU forced to FP32 / fp16 | f32 | 253.2 | 3.9 | 0.950 | 0.940 | 0.908 | 1.000 |
+| OpenVINO / NPU / fp16 | f16 | 482.2 | 2.1 | 0.949 | 0.940 | 0.908 | 1.000 |
+| OpenVINO / CPU / int8 (first export, see 3) | f32 | 230.7 | 4.4 | 0.859 | 0.835 | 0.610 | 0.878 |
+| OpenVINO / NPU / int8 (first export, see 3) | f16 | 438.5 | 2.3 | 0.438 | 0.159 | 0.043 | -0.066 |
 
-All 13 combinations, with p90 / p99 and compile times: [`benchmark_pill.md`](docs/assets/benchmark_pill.md);
-raw numbers and environment: [`benchmark_pill.json`](docs/assets/benchmark_pill.json).
+All 13 runs with p90 / p99 and compile times are in [`benchmark_pill.md`](docs/assets/benchmark_pill.md), raw numbers
+and environment in [`benchmark_pill.json`](docs/assets/benchmark_pill.json).
 
-**1. Deploy on the iGPU in FP16: 3.4× faster than PyTorch, no accuracy loss.** 123 ms per image (8.1 FPS) against
-425 ms, with identical AUROC and AUPRO, and scores correlated at ρ = 0.999 with PyTorch. Latency is also far more
-predictable: σ ≈ 1 ms on the iGPU against 29 ms for PyTorch on the CPU.
+1. **The iGPU in FP16 is the best option: 3.4x faster than PyTorch with the same accuracy.** 123 ms per image
+   (8.1 FPS) against 425 ms, same AUROC and AUPRO, and a Spearman correlation of 0.999 with the PyTorch scores. The
+   latency is also much more stable: std of about 1 ms on the iGPU against 29 ms for PyTorch on the CPU.
+2. **FP16 is fine for this model.** I expected precision problems in the distance, but the squared norms of the
+   memory bank vectors stay below 9.3k (the FP16 max is 65.5k) and the largest score difference is 0.77, for a
+   threshold of 35. FP16 makes the iGPU twice as fast as FP32 (123 vs 253 ms). The operating point moves by one image
+   each way (2 false alarms instead of 3, 127 detections instead of 128), within the noise of a 27-image calibration
+   set.
+3. **The first INT8 export was broken.** It quantized the whole graph except the nearest neighbour MatMul: 20 %
+   faster on the CPU, 3 % on the iGPU, but recall dropped from 91 % to 61 %. Looking at the IR, excluding the MatMul
+   did not protect the distance: NNCF still added 8-bit FakeQuantize nodes on the inputs of the `Power`, `ReduceSum`
+   and `Sqrt` ops that compute the distance, and on the blur of the anomaly map. So the anomaly score itself was
+   computed from 8-bit values. The fix is described below.
+4. **The NPU is the slowest target.** In FP16 it is accurate and very stable (std of 0.5 ms), but at 482 ms it is
+   slower than the CPU. My guess is that a large dense MatMul followed by a TopK over 24k vectors is a bad fit for
+   it. I don't know yet why it collapsed with the broken INT8 export (Spearman -0.07, against 0.88 on the CPU with
+   the same IR). It still has to be tested again with the backbone-only INT8 model.
 
-**2. FP16 is safe for this model; my concern about it was wrong.** Squared norms of memory-bank vectors peak at
-9.3 k, well inside the FP16 range (65.5 k), and the largest score deviation is 0.77 for a decision threshold of 35.
-FP16 execution makes the iGPU twice as fast as forcing FP32 (123 vs 253 ms) at the same accuracy. The operating point
-moves by one image each way (2 false alarms instead of 3, 127 detections instead of 128), within the noise of a
-27-image calibration set.
+### INT8 backbone and INT8 memory bank
 
-**3. Naive INT8 is a bad trade: 20 % faster on CPU, 3 % on iGPU, recall down from 91 % to 61 %.**
-- *Little speed-up*: the nearest-neighbour search (1,024 patches × 24,576 bank vectors × 1,536 dims, 77 GFLOP per
-  image) stays in floating point and dominates the cost. The 151 MB memory bank also keeps the INT8 model at 214 MB
-  (250 MB in FP32).
-- *Large accuracy loss*: the memory bank was built from FP32 features while the queries now come from an INT8
-  backbone, so every distance carries the quantization error (scores shift by up to 25). Next experiment: rebuild the
-  memory bank with the quantized backbone so that bank and queries share the same error.
+To quantize only the feature extractor, the model is split in two:
 
-**4. The NPU is the slowest target here, and INT8 breaks on it.** In FP16 it is accurate and extremely stable
-(σ = 0.5 ms), but at 482 ms it is slower than the CPU: one large dense MatMul followed by a TopK over 24 k vectors is
-probably a poor fit for it. With the INT8 model its scores are uncorrelated with PyTorch (ρ = −0.07), while the same
-IR reaches 0.86 AUROC on the CPU: an NPU-specific numerical problem, not diagnosed yet. Next experiment: split the
-graph, with the backbone on the NPU and the nearest-neighbour search on the iGPU, and time each stage.
+- stage 1: backbone and embedding, exported to OpenVINO (FP32 or INT8, same 27 calibration images). All 58
+  FakeQuantize nodes are in the backbone and the pooling;
+- stage 2: anomalib's nearest neighbour head, in FP32.
 
-Not measured: power draw (no reliable per-engine telemetry on this laptop). First compilation takes about 30 s on the
-NPU, so a deployment should cache compiled models (`CACHE_DIR`).
+A second memory bank is built from the INT8 features of the 240 fitting images, with the same coreset algorithm
+(KCenterGreedy, 10 %, 18 min on CPU).
+
+| Variant | Threshold | Image AUROC | Pixel AUROC | AUPRO | Detected (/141) | False alarms (/26) | Stage 1, CPU p50 |
+|---|---|---|---|---|---|---|---|
+| FP32 features + FP32 bank (= PyTorch) | 35.2 | 0.949 | 0.981 | 0.940 | 128 | 3 | 84.0 ms |
+| INT8 features + FP32 bank | 38.8 | 0.935 | 0.952 | 0.882 | 125 | 2 | 22.3 ms |
+| **INT8 features + INT8 bank** | 35.8 | **0.944** | **0.979** | **0.934** | 127 | 3 | **22.6 ms** |
+
+- The split gives the same scores as PyTorch (Spearman 1.000, max difference 0.01).
+- With INT8 queries against the FP32 bank, localisation suffers more than detection: -0.058 AUPRO but only -0.014
+  image AUROC. The calibrated threshold goes up from 35.2 to 38.8 because every query ends up further from the bank.
+- Rebuilding the bank from INT8 features recovers most of it: the threshold comes back to 35.8 and AUPRO is only
+  0.006 below FP32. The remaining gap is one detection out of 141, on a single test set.
+- The INT8 backbone is 3.7x faster (84 -> 22.6 ms on CPU). The bottleneck is now the nearest neighbour head (325 ms
+  in PyTorch on CPU). Next step: run the head in OpenVINO FP16 on the iGPU and stage 1 on the NPU.
+
+Full table: [`int8_bank_pill.md`](docs/assets/int8_bank_pill.md), raw numbers:
+[`int8_bank_pill.json`](docs/assets/int8_bank_pill.json), code: [`int8_bank.py`](src/industrial_ad/int8_bank.py). To
+reproduce: `uv run iad int8-bank --category pill`.
+
+Not measured: power consumption (no reliable per-device telemetry on this laptop). The first compilation takes about
+30 s on the NPU, so a real deployment should cache the compiled models (`CACHE_DIR`).
 
 ```bash
 uv sync --extra openvino
-uv run iad devices                          # pre-flight: devices, NPU driver, AC power
+uv run iad devices                          # devices, NPU driver, AC power
 uv run iad benchmark --category pill        # export fp32/fp16/int8, then CPU, GPU, GPU:f32, NPU
 ```
 
-Results go to `runs/<model>/<category>/benchmark/`: `results.json` (every number plus environment), `results.md`,
-`latency_accuracy.png`.
+Results are written to `runs/<model>/<category>/benchmark/`: `results.json` (all the numbers and the environment),
+`results.md` and `latency_accuracy.png`.
 
 ## Evaluation protocol
 
@@ -140,18 +163,18 @@ flowchart LR
 
 | Choice | Why |
 |---|---|
-| **Threshold calibrated on held-out defect-free images** | In production there are no labelled defects to tune on. Picking the threshold that maximises F1 on the test set leaks labels; that "oracle F1" is reported only as an upper bound. |
-| **Full test set, stratified subsampling for quick runs** | Taking the first *N* files (sorted by folder) silently evaluates on two defect types out of seven. |
-| **Pixel-level AUROC and AUPRO@0.3** | Image AUROC says *whether* a part is defective. AUPRO checks *where*, weighting each defect region equally so that tiny contaminations count as much as large cracks. |
-| **Raw model scores** | anomalib's post-processor min-max normalises with validation statistics and clamps to [0, 1]; saturated scores create ties that distort ranking metrics. |
-| **Heat maps on a shared colour scale** | Per-image min-max normalisation paints a red hot spot on every image, defect-free ones included. Here mid-scale = decision threshold, on every image. |
+| Threshold calibrated on held-out good images | On a real production line there are no labelled defects to tune on. Choosing the threshold that maximises F1 on the test set uses the test labels, so this "oracle F1" is only reported as an upper bound. |
+| Full test set, stratified subsampling for quick runs | Taking the first *N* files (sorted by folder) would only cover two of the seven defect types. |
+| Pixel AUROC and AUPRO@0.3 | Image AUROC tells if a part is defective, AUPRO tells if the defect is found at the right place. Each defect region has the same weight, so a small contamination counts as much as a large crack. |
+| Raw model scores | anomalib's post-processor min-max normalises the scores and clips them to [0, 1]. Saturated scores create ties that bias the ranking metrics. |
+| Heat maps on a shared colour scale | With per-image min-max normalisation every image gets a red spot, good ones included. Here the middle of the colour scale is the decision threshold, on every image. |
 
-All metrics are implemented in [`metrics.py`](src/industrial_ad/metrics.py) and unit-tested against cases with
-known answers (perfect maps, random maps, equal weighting of regions of very different sizes).
+The metrics are in [`metrics.py`](src/industrial_ad/metrics.py) and are tested on cases with a known answer (perfect
+maps, random maps, regions of very different sizes).
 
 ## Quickstart
 
-Requires Python 3.11–3.13 and [uv](https://docs.astral.sh/uv/).
+Requires Python 3.11 to 3.13 and [uv](https://docs.astral.sh/uv/).
 
 ```bash
 git clone https://github.com/Zeta-12/industrial-anomaly-detection.git
@@ -160,52 +183,54 @@ uv sync                     # CPU wheels
 
 uv run iad download         # MVTec AD, 4.9 GB, CC BY-NC-SA 4.0 (non-commercial)
 uv run iad run --category pill                 # fit + calibrate + evaluate one category
-uv run iad run --category all --model padim    # every category, another model
-uv run iad summary --model patchcore           # markdown table over evaluated categories
+uv run iad run --category all --model padim    # all categories, other model
+uv run iad summary --model patchcore           # markdown table of the evaluated categories
 ```
 
 Each run writes to `runs/<model>/<category>/`:
 
 | File | Content |
 |---|---|
-| `metrics.json` | every metric, the thresholds, timings, library versions and the exact config |
-| `scores.csv` | per-image score and decision |
+| `metrics.json` | all metrics, thresholds, timings, library versions and the config used |
+| `scores.csv` | score and decision for each image |
 | `score_distribution.png`, `curves.png` | score histograms with the threshold, ROC and PR curves |
-| `panels/` | best-detected and hardest example of each defect type, highest-scoring normal image |
-| `split.json` | which training images were used for fitting vs calibration |
+| `panels/` | easiest and hardest image of each defect type, good image with the highest score |
+| `split.json` | training images used for fitting and for calibration |
 
 ## Repository layout
 
 ```
 src/industrial_ad/
-├── data.py       MVTec-layout indexing, fit/calibration split, stratified subsampling
-├── models.py     anomalib model construction, fitting, raw scoring
-├── metrics.py    calibrated threshold, image metrics, pixel AUROC, AUPRO
-├── pipeline.py   train / evaluate / summary
-├── export.py     OpenVINO IR export: fp32, fp16, int8 (NNCF post-training quantization)
-├── benchmark.py  latency + accuracy per device (CPU / iGPU / NPU), PyTorch baseline
-├── viz.py        panels, score distributions, ROC / PR curves, latency-accuracy trade-off
-└── cli.py        `iad` command
-tests/            unit tests on a synthetic MVTec-layout dataset (no download, runs in CI)
-configs/          default.yaml: every parameter in one place
+├── data.py        MVTec layout indexing, fit/calibration split, stratified subsampling
+├── models.py      anomalib model creation, fitting, raw scoring
+├── metrics.py     calibrated threshold, image metrics, pixel AUROC, AUPRO
+├── pipeline.py    train / evaluate / summary
+├── export.py      OpenVINO export: fp32, fp16, int8 (NNCF post-training quantization)
+├── benchmark.py   latency and accuracy per device (CPU / iGPU / NPU), PyTorch baseline
+├── int8_bank.py   INT8 backbone + memory bank built from INT8 features
+├── viz.py         panels, score distributions, ROC / PR curves, latency vs accuracy plot
+└── cli.py         `iad` command
+tests/             unit tests on a small synthetic dataset in MVTec layout (no download, runs in CI)
+configs/           default.yaml with all the parameters
 ```
 
 ## Limitations
 
-- The calibration set is small (~27 images per category), so the achieved false-positive rate moves in steps of
-  roughly 4 % and varies with the split seed.
-- Pixel metrics are computed at the model resolution (256 × 256), not the original image resolution.
-- MVTec AD has controlled lighting and pose. A real production line also needs monitoring of drift in the
-  normal-score distribution.
+- The calibration set is small (about 27 images per category), so the false positive rate moves in steps of about
+  4 % and depends on the split seed.
+- Pixel metrics are computed at the model resolution (256x256), not at the original image resolution.
+- MVTec AD has controlled lighting and pose. A real production line would also need to monitor drift in the
+  distribution of normal scores.
 
 ## Roadmap
 
-- [x] Calibrated threshold, pixel metrics, error analysis: pill category
+- [x] Calibrated threshold, pixel metrics, error analysis on pill
 - [ ] All 15 MVTec AD categories, PatchCore vs PaDiM (and EfficientAD, trained on GPU)
-- [x] OpenVINO FP32 / FP16 / INT8 export, CPU / iGPU / NPU latency + accuracy benchmark on pill
-- [ ] INT8 with a memory bank rebuilt from the quantized backbone
-- [ ] Split pipeline (backbone on NPU, nearest-neighbour search on iGPU) with per-stage latency
-- [ ] Diagnose the NPU INT8 failure
+- [x] OpenVINO FP32 / FP16 / INT8 export, latency and accuracy benchmark on CPU / iGPU / NPU (pill)
+- [x] INT8 backbone with a memory bank rebuilt from INT8 features
+- [ ] Two-stage deployment: INT8 backbone on NPU or CPU, nearest neighbour head in OpenVINO FP16 on iGPU
+- [ ] Fix the full-graph INT8 export (ignored scope covering the whole head) and run the benchmark again
+- [ ] Test the NPU again with the backbone-only INT8 model
 - [ ] Benchmark on all categories
 - [ ] Interactive demo (Gradio, Hugging Face Spaces)
 - [ ] REST service (FastAPI) and Docker image
@@ -218,5 +243,5 @@ distributed under CC BY-NC-SA 4.0 and is **not** included in this repository. Co
 
 ## Author
 
-**Julien Beloin**, Machine Learning & Computer Vision Engineer ·
-[LinkedIn](https://www.linkedin.com/in/j-beloin) · [GitHub](https://github.com/Zeta-12)
+**Julien Beloin**, Machine Learning & Computer Vision Engineer
+([LinkedIn](https://www.linkedin.com/in/j-beloin), [GitHub](https://github.com/Zeta-12))

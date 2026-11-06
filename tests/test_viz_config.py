@@ -10,8 +10,8 @@ def test_shared_scale_places_threshold_mid_scale():
     np.testing.assert_allclose(scaled, [0.0, 0.0, 0.5, 1.0])
 
 
-def test_shared_scale_does_not_invent_hot_spots_on_flat_maps():
-    # Per-image min-max would stretch tiny noise to the full colour range.
+def test_shared_scale_flat_map_stays_low():
+    # per-image min-max would stretch this noise to the full colour range
     flat = np.full((8, 8), 1.0) + 1e-6 * np.random.default_rng(0).random((8, 8))
     assert viz.shared_scale(flat, low=1.0, threshold=2.0).max() < 0.01
 

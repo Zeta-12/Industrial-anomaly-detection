@@ -1,7 +1,7 @@
-"""Export a fitted model to OpenVINO IR in FP32, FP16 (compressed weights) and INT8 (post-training quantization).
+"""OpenVINO IR export: FP32, FP16 (compressed weights) and INT8 (NNCF post-training quantization).
 
-The exported graph takes a float RGB batch in [0, 1] at the model resolution and returns the *raw* image score and
-anomaly map, exactly like `models.score_images` does in PyTorch, so accuracy can be compared one to one.
+Input: float RGB in [0, 1], NCHW, at the model resolution. Outputs: raw image score and anomaly map, the same values
+as `models.score_images`.
 """
 
 from __future__ import annotations
@@ -24,7 +24,7 @@ PRECISIONS = ("fp32", "fp16", "int8")
 
 
 class ExportWrapper(nn.Module):
-    """ImageNet-style normalisation + anomaly model, returning (score, map) without post-processing."""
+    """Normalisation + model, returns (score, anomaly map)."""
 
     def __init__(self, model: nn.Module, mean: Sequence[float], std: Sequence[float]) -> None:
         super().__init__()
@@ -39,7 +39,7 @@ class ExportWrapper(nn.Module):
 
 
 def normalization(module: nn.Module) -> tuple[list[float], list[float]]:
-    """Mean / std of the Normalize step in the model's pre-processor."""
+    """Mean and std of the Normalize transform of the pre-processor."""
     transform = getattr(module.pre_processor, "transform", None)
     for t in getattr(transform, "transforms", [transform]):
         if type(t).__name__ == "Normalize":
@@ -59,11 +59,12 @@ def to_openvino(wrapper: nn.Module, image_size: Sequence[int]):
     return model
 
 
-def quantize_int8(model, calibration_images: Sequence[np.ndarray]):
-    """Post-training INT8 quantization calibrated on defect-free images only.
+def quantize_int8(model, calibration_images: Sequence[np.ndarray], keep_matmul_float: bool = True):
+    """INT8 post-training quantization, calibrated on defect-free images.
 
-    The nearest-neighbour MatMul against the memory bank is kept in floating point: quantizing it would degrade the
-    very distances that define the anomaly score. Only the convolutional feature extractor is quantized.
+    keep_matmul_float only excludes the MatMul nodes. On the full PatchCore graph that is not enough: NNCF still
+    quantizes the Power / ReduceSum / Sqrt inputs of the distance and the anomaly map blur (pill: image AUROC
+    0.949 -> 0.859). int8_bank.export_features quantizes the feature extractor only and passes False.
     """
     import nncf
 
@@ -72,12 +73,12 @@ def quantize_int8(model, calibration_images: Sequence[np.ndarray]):
         model,
         dataset,
         subset_size=len(calibration_images),
-        ignored_scope=nncf.IgnoredScope(types=["MatMul"]),
+        ignored_scope=nncf.IgnoredScope(types=["MatMul"]) if keep_matmul_float else None,
     )
 
 
 def export(cfg: dict[str, Any], precisions: Sequence[str] = PRECISIONS, force: bool = False) -> dict[str, Path]:
-    """Write `runs/<model>/<category>/openvino/<precision>/model.xml` for each precision; return their paths."""
+    """Write runs/<model>/<category>/openvino/<precision>/model.xml for each precision and return the paths."""
     import openvino as ov
 
     from industrial_ad import models, pipeline
@@ -100,7 +101,7 @@ def export(cfg: dict[str, Any], precisions: Sequence[str] = PRECISIONS, force: b
         paths[precision].parent.mkdir(parents=True, exist_ok=True)
         if precision == "int8":
             calib = [_chw(models.load_image(p, size)) for p in pipeline.calibration_paths(cfg)]
-            log.info("INT8 post-training quantization on %d defect-free calibration images...", len(calib))
+            log.info("INT8 quantization, %d calibration images", len(calib))
             ov.save_model(quantize_int8(ov_model.clone(), calib), paths[precision], compress_to_fp16=False)
         else:
             ov.save_model(ov_model.clone(), paths[precision], compress_to_fp16=precision == "fp16")
@@ -114,5 +115,5 @@ def export(cfg: dict[str, Any], precisions: Sequence[str] = PRECISIONS, force: b
 
 
 def _chw(image: np.ndarray) -> np.ndarray:
-    """uint8 HWC -> float32 CHW in [0, 1], the exported model's input format."""
+    """uint8 HWC -> float32 CHW in [0, 1]"""
     return np.ascontiguousarray(image.transpose(2, 0, 1), dtype=np.float32) / 255.0

@@ -35,7 +35,7 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["src/industrial_ad"]
 
-# CPU wheels by default; on a CUDA machine install torch from the matching index first.
+# CPU wheels by default (for CUDA, point torch to the matching index)
 [tool.uv.sources]
 torch = { index = "pytorch-cpu" }
 torchvision = { index = "pytorch-cpu" }
