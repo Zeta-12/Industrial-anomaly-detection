@@ -1,0 +1,3991 @@
+{
+ "patchcore": {
+  "bottle": {
+   "model": "patchcore",
+   "category": "bottle",
+   "n_test": 83,
+   "n_calibration": 21,
+   "image": {
+    "auroc": 1.0,
+    "ap": 0.9999999999999998,
+    "threshold": 30.233869552612305,
+    "tp": 63,
+    "fp": 0,
+    "fn": 0,
+    "tn": 20,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
+    "fpr": 0.0,
+    "oracle_f1": 1.0,
+    "oracle_threshold": 38.56850814819336
+   },
+   "pixel": {
+    "auroc": 0.9852900132885706,
+    "aupro": 0.9390266297477795,
+    "aupro_fpr_limit": 0.3,
+    "threshold": 28.212142944335938
+   },
+   "per_defect": {
+    "good": {
+     "n": 20,
+     "flagged": 0,
+     "rate": 0.0,
+     "kind": "false_positive_rate"
+    },
+    "broken_large": {
+     "n": 20,
+     "flagged": 20,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "broken_small": {
+     "n": 22,
+     "flagged": 22,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "contamination": {
+     "n": 21,
+     "flagged": 21,
+     "rate": 1.0,
+     "kind": "recall"
+    }
+   },
+   "calibration": {
+    "max_fpr": 0.05,
+    "image_threshold": 30.233869552612305,
+    "pixel_threshold": 28.212142944335938,
+    "pixel_low": 15.193394660949707,
+    "image_scores": [
+     24.433242797851562,
+     24.177257537841797,
+     25.06382942199707,
+     22.979162216186523,
+     26.27451515197754,
+     24.227758407592773,
+     30.233869552612305,
+     26.679712295532227,
+     26.23166275024414,
+     39.45983123779297,
+     24.541358947753906,
+     24.36998748779297,
+     23.213424682617188,
+     24.073341369628906,
+     26.977067947387695,
+     23.535869598388672,
+     21.221370697021484,
+     21.915163040161133,
+     26.97176742553711,
+     22.884662628173828,
+     24.12027931213379
+    ]
+   },
+   "timing": {
+    "ms_per_image_end_to_end": 27.8,
+    "device": "cuda:0",
+    "note": "includes image decoding and resizing; see the export benchmark for model latency"
+   },
+   "config": {
+    "data": {
+     "root": "E:\\portfolio\\datasets\\MVTecAD",
+     "category": "bottle",
+     "image_size": [
+      256,
+      256
+     ],
+     "calib_ratio": 0.1,
+     "seed": 42,
+     "max_test_samples": 0
+    },
+    "model": {
+     "patchcore": {
+      "backbone": "wide_resnet50_2",
+      "layers": [
+       "layer2",
+       "layer3"
+      ],
+      "coreset_sampling_ratio": 0.1,
+      "num_neighbors": 9
+     }
+    }
+   },
+   "environment": {
+    "python": "3.12.16",
+    "torch": "2.15.0+cu134",
+    "anomalib": "2.7.0",
+    "cpu": "Intel64 Family 6 Model 167 Stepping 1, GenuineIntel",
+    "cuda_device": "NVIDIA GeForce RTX 3060 Ti"
+   },
+   "fit_seconds": 49.6
+  },
+  "cable": {
+   "model": "patchcore",
+   "category": "cable",
+   "n_test": 150,
+   "n_calibration": 22,
+   "image": {
+    "auroc": 0.9857571214392804,
+    "ap": 0.9905777980155259,
+    "threshold": 42.089698791503906,
+    "tp": 90,
+    "fp": 5,
+    "fn": 2,
+    "tn": 53,
+    "precision": 0.9473684210526315,
+    "recall": 0.9782608695652174,
+    "f1": 0.9625668449197862,
+    "fpr": 0.08620689655172414,
+    "oracle_f1": 0.972972972972973,
+    "oracle_threshold": 42.715065002441406
+   },
+   "pixel": {
+    "auroc": 0.9843368673946062,
+    "aupro": 0.9277790372639468,
+    "aupro_fpr_limit": 0.3,
+    "threshold": 40.174800872802734
+   },
+   "per_defect": {
+    "good": {
+     "n": 58,
+     "flagged": 5,
+     "rate": 0.08620689655172414,
+     "kind": "false_positive_rate"
+    },
+    "bent_wire": {
+     "n": 13,
+     "flagged": 13,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "cable_swap": {
+     "n": 12,
+     "flagged": 11,
+     "rate": 0.9166666666666666,
+     "kind": "recall"
+    },
+    "combined": {
+     "n": 11,
+     "flagged": 11,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "cut_inner_insulation": {
+     "n": 14,
+     "flagged": 14,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "cut_outer_insulation": {
+     "n": 10,
+     "flagged": 10,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "missing_cable": {
+     "n": 12,
+     "flagged": 12,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "missing_wire": {
+     "n": 10,
+     "flagged": 10,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "poke_insulation": {
+     "n": 10,
+     "flagged": 9,
+     "rate": 0.9,
+     "kind": "recall"
+    }
+   },
+   "calibration": {
+    "max_fpr": 0.05,
+    "image_threshold": 42.089698791503906,
+    "pixel_threshold": 40.174800872802734,
+    "pixel_low": 28.19472885131836,
+    "image_scores": [
+     42.089698791503906,
+     38.39730453491211,
+     38.315189361572266,
+     38.919532775878906,
+     40.34756088256836,
+     39.29928207397461,
+     42.35987091064453,
+     41.5264892578125,
+     41.43489456176758,
+     39.739505767822266,
+     40.16757583618164,
+     40.28879928588867,
+     38.96421813964844,
+     37.61730194091797,
+     38.553585052490234,
+     38.02651596069336,
+     39.721492767333984,
+     36.17496871948242,
+     40.29139709472656,
+     36.51466369628906,
+     40.1071662902832,
+     38.60734939575195
+    ]
+   },
+   "timing": {
+    "ms_per_image_end_to_end": 41.1,
+    "device": "cuda:0",
+    "note": "includes image decoding and resizing; see the export benchmark for model latency"
+   },
+   "config": {
+    "data": {
+     "root": "E:\\portfolio\\datasets\\MVTecAD",
+     "category": "cable",
+     "image_size": [
+      256,
+      256
+     ],
+     "calib_ratio": 0.1,
+     "seed": 42,
+     "max_test_samples": 0
+    },
+    "model": {
+     "patchcore": {
+      "backbone": "wide_resnet50_2",
+      "layers": [
+       "layer2",
+       "layer3"
+      ],
+      "coreset_sampling_ratio": 0.1,
+      "num_neighbors": 9
+     }
+    }
+   },
+   "environment": {
+    "python": "3.12.16",
+    "torch": "2.15.0+cu134",
+    "anomalib": "2.7.0",
+    "cpu": "Intel64 Family 6 Model 167 Stepping 1, GenuineIntel",
+    "cuda_device": "NVIDIA GeForce RTX 3060 Ti"
+   },
+   "fit_seconds": 55.3
+  },
+  "capsule": {
+   "model": "patchcore",
+   "category": "capsule",
+   "n_test": 132,
+   "n_calibration": 22,
+   "image": {
+    "auroc": 0.9904268049461507,
+    "ap": 0.9979673217719718,
+    "threshold": 26.595741271972656,
+    "tp": 107,
+    "fp": 4,
+    "fn": 2,
+    "tn": 19,
+    "precision": 0.963963963963964,
+    "recall": 0.981651376146789,
+    "f1": 0.9727272727272728,
+    "fpr": 0.17391304347826086,
+    "oracle_f1": 0.9814814814814815,
+    "oracle_threshold": 27.312231063842773
+   },
+   "pixel": {
+    "auroc": 0.9897317849597349,
+    "aupro": 0.9242686906352667,
+    "aupro_fpr_limit": 0.3,
+    "threshold": 25.70602035522461
+   },
+   "per_defect": {
+    "good": {
+     "n": 23,
+     "flagged": 4,
+     "rate": 0.17391304347826086,
+     "kind": "false_positive_rate"
+    },
+    "crack": {
+     "n": 23,
+     "flagged": 23,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "faulty_imprint": {
+     "n": 22,
+     "flagged": 21,
+     "rate": 0.9545454545454546,
+     "kind": "recall"
+    },
+    "poke": {
+     "n": 21,
+     "flagged": 21,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "scratch": {
+     "n": 23,
+     "flagged": 22,
+     "rate": 0.9565217391304348,
+     "kind": "recall"
+    },
+    "squeeze": {
+     "n": 20,
+     "flagged": 20,
+     "rate": 1.0,
+     "kind": "recall"
+    }
+   },
+   "calibration": {
+    "max_fpr": 0.05,
+    "image_threshold": 26.595741271972656,
+    "pixel_threshold": 25.70602035522461,
+    "pixel_low": 15.339820861816406,
+    "image_scores": [
+     25.644216537475586,
+     30.491329193115234,
+     24.20762062072754,
+     23.842376708984375,
+     24.148529052734375,
+     22.96891975402832,
+     22.361438751220703,
+     25.16719627380371,
+     24.443429946899414,
+     23.292781829833984,
+     23.587310791015625,
+     23.456876754760742,
+     22.945877075195312,
+     23.319169998168945,
+     23.888097763061523,
+     25.22683334350586,
+     25.957380294799805,
+     24.9204158782959,
+     24.466264724731445,
+     26.299854278564453,
+     25.855178833007812,
+     26.595741271972656
+    ]
+   },
+   "timing": {
+    "ms_per_image_end_to_end": 41.2,
+    "device": "cuda:0",
+    "note": "includes image decoding and resizing; see the export benchmark for model latency"
+   },
+   "config": {
+    "data": {
+     "root": "E:\\portfolio\\datasets\\MVTecAD",
+     "category": "capsule",
+     "image_size": [
+      256,
+      256
+     ],
+     "calib_ratio": 0.1,
+     "seed": 42,
+     "max_test_samples": 0
+    },
+    "model": {
+     "patchcore": {
+      "backbone": "wide_resnet50_2",
+      "layers": [
+       "layer2",
+       "layer3"
+      ],
+      "coreset_sampling_ratio": 0.1,
+      "num_neighbors": 9
+     }
+    }
+   },
+   "environment": {
+    "python": "3.12.16",
+    "torch": "2.15.0+cu134",
+    "anomalib": "2.7.0",
+    "cpu": "Intel64 Family 6 Model 167 Stepping 1, GenuineIntel",
+    "cuda_device": "NVIDIA GeForce RTX 3060 Ti"
+   },
+   "fit_seconds": 51.1
+  },
+  "carpet": {
+   "model": "patchcore",
+   "category": "carpet",
+   "n_test": 117,
+   "n_calibration": 28,
+   "image": {
+    "auroc": 0.985553772070626,
+    "ap": 0.9961257195116435,
+    "threshold": 27.867300033569336,
+    "tp": 88,
+    "fp": 11,
+    "fn": 1,
+    "tn": 17,
+    "precision": 0.8888888888888888,
+    "recall": 0.9887640449438202,
+    "f1": 0.9361702127659574,
+    "fpr": 0.39285714285714285,
+    "oracle_f1": 0.9775280898876404,
+    "oracle_threshold": 33.555633544921875
+   },
+   "pixel": {
+    "auroc": 0.990545633482672,
+    "aupro": 0.938360956768064,
+    "aupro_fpr_limit": 0.3,
+    "threshold": 27.372350692749023
+   },
+   "per_defect": {
+    "good": {
+     "n": 28,
+     "flagged": 11,
+     "rate": 0.39285714285714285,
+     "kind": "false_positive_rate"
+    },
+    "color": {
+     "n": 19,
+     "flagged": 19,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "cut": {
+     "n": 17,
+     "flagged": 17,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "hole": {
+     "n": 17,
+     "flagged": 17,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "metal_contamination": {
+     "n": 17,
+     "flagged": 16,
+     "rate": 0.9411764705882353,
+     "kind": "recall"
+    },
+    "thread": {
+     "n": 19,
+     "flagged": 19,
+     "rate": 1.0,
+     "kind": "recall"
+    }
+   },
+   "calibration": {
+    "max_fpr": 0.05,
+    "image_threshold": 27.867300033569336,
+    "pixel_threshold": 27.372350692749023,
+    "pixel_low": 19.74099349975586,
+    "image_scores": [
+     23.7855224609375,
+     26.429882049560547,
+     25.183570861816406,
+     26.206159591674805,
+     24.997304916381836,
+     26.864625930786133,
+     25.71209144592285,
+     23.701080322265625,
+     25.1260929107666,
+     25.474533081054688,
+     26.334829330444336,
+     24.122882843017578,
+     24.91645622253418,
+     26.295303344726562,
+     25.81597328186035,
+     25.342758178710938,
+     27.337535858154297,
+     25.352619171142578,
+     24.67405128479004,
+     26.442882537841797,
+     29.636734008789062,
+     26.32484245300293,
+     23.393985748291016,
+     24.78485870361328,
+     27.867300033569336,
+     26.83625602722168,
+     25.711353302001953,
+     25.848562240600586
+    ]
+   },
+   "timing": {
+    "ms_per_image_end_to_end": 42.7,
+    "device": "cuda:0",
+    "note": "includes image decoding and resizing; see the export benchmark for model latency"
+   },
+   "config": {
+    "data": {
+     "root": "E:\\portfolio\\datasets\\MVTecAD",
+     "category": "carpet",
+     "image_size": [
+      256,
+      256
+     ],
+     "calib_ratio": 0.1,
+     "seed": 42,
+     "max_test_samples": 0
+    },
+    "model": {
+     "patchcore": {
+      "backbone": "wide_resnet50_2",
+      "layers": [
+       "layer2",
+       "layer3"
+      ],
+      "coreset_sampling_ratio": 0.1,
+      "num_neighbors": 9
+     }
+    }
+   },
+   "environment": {
+    "python": "3.12.16",
+    "torch": "2.15.0+cu134",
+    "anomalib": "2.7.0",
+    "cpu": "Intel64 Family 6 Model 167 Stepping 1, GenuineIntel",
+    "cuda_device": "NVIDIA GeForce RTX 3060 Ti"
+   },
+   "fit_seconds": 78.2
+  },
+  "grid": {
+   "model": "patchcore",
+   "category": "grid",
+   "n_test": 78,
+   "n_calibration": 26,
+   "image": {
+    "auroc": 0.9899749373433584,
+    "ap": 0.9965025422746445,
+    "threshold": 30.150829315185547,
+    "tp": 56,
+    "fp": 4,
+    "fn": 1,
+    "tn": 17,
+    "precision": 0.9333333333333333,
+    "recall": 0.9824561403508771,
+    "f1": 0.9572649572649572,
+    "fpr": 0.19047619047619047,
+    "oracle_f1": 0.9655172413793103,
+    "oracle_threshold": 31.165868759155273
+   },
+   "pixel": {
+    "auroc": 0.9825577660318628,
+    "aupro": 0.9097582041854556,
+    "aupro_fpr_limit": 0.3,
+    "threshold": 29.13075828552246
+   },
+   "per_defect": {
+    "good": {
+     "n": 21,
+     "flagged": 4,
+     "rate": 0.19047619047619047,
+     "kind": "false_positive_rate"
+    },
+    "bent": {
+     "n": 12,
+     "flagged": 12,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "broken": {
+     "n": 12,
+     "flagged": 12,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "glue": {
+     "n": 11,
+     "flagged": 10,
+     "rate": 0.9090909090909091,
+     "kind": "recall"
+    },
+    "metal_contamination": {
+     "n": 11,
+     "flagged": 11,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "thread": {
+     "n": 11,
+     "flagged": 11,
+     "rate": 1.0,
+     "kind": "recall"
+    }
+   },
+   "calibration": {
+    "max_fpr": 0.05,
+    "image_threshold": 30.150829315185547,
+    "pixel_threshold": 29.13075828552246,
+    "pixel_low": 18.48027992248535,
+    "image_scores": [
+     24.31024169921875,
+     27.073169708251953,
+     28.237812042236328,
+     25.030715942382812,
+     27.663057327270508,
+     25.333232879638672,
+     28.90966796875,
+     27.075592041015625,
+     29.97187614440918,
+     26.212799072265625,
+     27.634857177734375,
+     26.232173919677734,
+     27.262908935546875,
+     27.329431533813477,
+     26.03764533996582,
+     30.150829315185547,
+     29.21083641052246,
+     26.397371292114258,
+     24.835906982421875,
+     24.20551109313965,
+     28.12929344177246,
+     26.043325424194336,
+     28.357789993286133,
+     26.869783401489258,
+     29.261991500854492,
+     30.242591857910156
+    ]
+   },
+   "timing": {
+    "ms_per_image_end_to_end": 28.4,
+    "device": "cuda:0",
+    "note": "includes image decoding and resizing; see the export benchmark for model latency"
+   },
+   "config": {
+    "data": {
+     "root": "E:\\portfolio\\datasets\\MVTecAD",
+     "category": "grid",
+     "image_size": [
+      256,
+      256
+     ],
+     "calib_ratio": 0.1,
+     "seed": 42,
+     "max_test_samples": 0
+    },
+    "model": {
+     "patchcore": {
+      "backbone": "wide_resnet50_2",
+      "layers": [
+       "layer2",
+       "layer3"
+      ],
+      "coreset_sampling_ratio": 0.1,
+      "num_neighbors": 9
+     }
+    }
+   },
+   "environment": {
+    "python": "3.12.16",
+    "torch": "2.15.0+cu134",
+    "anomalib": "2.7.0",
+    "cpu": "Intel64 Family 6 Model 167 Stepping 1, GenuineIntel",
+    "cuda_device": "NVIDIA GeForce RTX 3060 Ti"
+   },
+   "fit_seconds": 68.9
+  },
+  "hazelnut": {
+   "model": "patchcore",
+   "category": "hazelnut",
+   "n_test": 110,
+   "n_calibration": 39,
+   "image": {
+    "auroc": 1.0,
+    "ap": 0.9999999999999998,
+    "threshold": 46.06840896606445,
+    "tp": 70,
+    "fp": 0,
+    "fn": 0,
+    "tn": 40,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
+    "fpr": 0.0,
+    "oracle_f1": 1.0,
+    "oracle_threshold": 48.2244758605957
+   },
+   "pixel": {
+    "auroc": 0.9880280360151816,
+    "aupro": 0.8895444794268763,
+    "aupro_fpr_limit": 0.3,
+    "threshold": 45.2147216796875
+   },
+   "per_defect": {
+    "good": {
+     "n": 40,
+     "flagged": 0,
+     "rate": 0.0,
+     "kind": "false_positive_rate"
+    },
+    "crack": {
+     "n": 18,
+     "flagged": 18,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "cut": {
+     "n": 17,
+     "flagged": 17,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "hole": {
+     "n": 18,
+     "flagged": 18,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "print": {
+     "n": 17,
+     "flagged": 17,
+     "rate": 1.0,
+     "kind": "recall"
+    }
+   },
+   "calibration": {
+    "max_fpr": 0.05,
+    "image_threshold": 46.06840896606445,
+    "pixel_threshold": 45.2147216796875,
+    "pixel_low": 21.80087661743164,
+    "image_scores": [
+     37.16183090209961,
+     36.37533950805664,
+     46.245365142822266,
+     38.91779327392578,
+     41.653446197509766,
+     44.09983444213867,
+     30.71846580505371,
+     38.95469284057617,
+     37.782264709472656,
+     41.693626403808594,
+     38.309574127197266,
+     37.22560119628906,
+     35.615047454833984,
+     39.0744514465332,
+     39.4869499206543,
+     41.27627182006836,
+     46.06840896606445,
+     36.93349838256836,
+     38.769317626953125,
+     42.154300689697266,
+     40.0640983581543,
+     38.237186431884766,
+     39.122589111328125,
+     42.39303207397461,
+     41.23833465576172,
+     39.87003707885742,
+     36.54907989501953,
+     40.1934700012207,
+     36.73668670654297,
+     40.803104400634766,
+     38.39726638793945,
+     39.607295989990234,
+     43.48360061645508,
+     37.68853759765625,
+     43.455535888671875,
+     38.672271728515625,
+     37.59840393066406,
+     37.95671844482422,
+     42.54487609863281
+    ]
+   },
+   "timing": {
+    "ms_per_image_end_to_end": 47.1,
+    "device": "cuda:0",
+    "note": "includes image decoding and resizing; see the export benchmark for model latency"
+   },
+   "config": {
+    "data": {
+     "root": "E:\\portfolio\\datasets\\MVTecAD",
+     "category": "hazelnut",
+     "image_size": [
+      256,
+      256
+     ],
+     "calib_ratio": 0.1,
+     "seed": 42,
+     "max_test_samples": 0
+    },
+    "model": {
+     "patchcore": {
+      "backbone": "wide_resnet50_2",
+      "layers": [
+       "layer2",
+       "layer3"
+      ],
+      "coreset_sampling_ratio": 0.1,
+      "num_neighbors": 9
+     }
+    }
+   },
+   "environment": {
+    "python": "3.12.16",
+    "torch": "2.15.0+cu134",
+    "anomalib": "2.7.0",
+    "cpu": "Intel64 Family 6 Model 167 Stepping 1, GenuineIntel",
+    "cuda_device": "NVIDIA GeForce RTX 3060 Ti"
+   },
+   "fit_seconds": 143.5
+  },
+  "leather": {
+   "model": "patchcore",
+   "category": "leather",
+   "n_test": 124,
+   "n_calibration": 24,
+   "image": {
+    "auroc": 1.0,
+    "ap": 1.0000000000000002,
+    "threshold": 26.444265365600586,
+    "tp": 92,
+    "fp": 17,
+    "fn": 0,
+    "tn": 15,
+    "precision": 0.8440366972477065,
+    "recall": 1.0,
+    "f1": 0.9154228855721394,
+    "fpr": 0.53125,
+    "oracle_f1": 1.0,
+    "oracle_threshold": 39.6790771484375
+   },
+   "pixel": {
+    "auroc": 0.992176939450568,
+    "aupro": 0.9732035931559632,
+    "aupro_fpr_limit": 0.3,
+    "threshold": 25.635515213012695
+   },
+   "per_defect": {
+    "good": {
+     "n": 32,
+     "flagged": 17,
+     "rate": 0.53125,
+     "kind": "false_positive_rate"
+    },
+    "color": {
+     "n": 19,
+     "flagged": 19,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "cut": {
+     "n": 19,
+     "flagged": 19,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "fold": {
+     "n": 17,
+     "flagged": 17,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "glue": {
+     "n": 19,
+     "flagged": 19,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "poke": {
+     "n": 18,
+     "flagged": 18,
+     "rate": 1.0,
+     "kind": "recall"
+    }
+   },
+   "calibration": {
+    "max_fpr": 0.05,
+    "image_threshold": 26.444265365600586,
+    "pixel_threshold": 25.635515213012695,
+    "pixel_low": 19.32006072998047,
+    "image_scores": [
+     26.044742584228516,
+     26.76030921936035,
+     24.003705978393555,
+     25.243009567260742,
+     23.63610076904297,
+     24.310937881469727,
+     23.88266944885254,
+     24.290489196777344,
+     26.27072525024414,
+     23.951011657714844,
+     24.857810974121094,
+     24.68718719482422,
+     25.607715606689453,
+     24.50264549255371,
+     25.313047409057617,
+     25.610679626464844,
+     24.54969596862793,
+     26.059675216674805,
+     24.677295684814453,
+     26.444265365600586,
+     24.635385513305664,
+     23.6412410736084,
+     24.675464630126953,
+     24.32044219970703
+    ]
+   },
+   "timing": {
+    "ms_per_image_end_to_end": 39.9,
+    "device": "cuda:0",
+    "note": "includes image decoding and resizing; see the export benchmark for model latency"
+   },
+   "config": {
+    "data": {
+     "root": "E:\\portfolio\\datasets\\MVTecAD",
+     "category": "leather",
+     "image_size": [
+      256,
+      256
+     ],
+     "calib_ratio": 0.1,
+     "seed": 42,
+     "max_test_samples": 0
+    },
+    "model": {
+     "patchcore": {
+      "backbone": "wide_resnet50_2",
+      "layers": [
+       "layer2",
+       "layer3"
+      ],
+      "coreset_sampling_ratio": 0.1,
+      "num_neighbors": 9
+     }
+    }
+   },
+   "environment": {
+    "python": "3.12.16",
+    "torch": "2.15.0+cu134",
+    "anomalib": "2.7.0",
+    "cpu": "Intel64 Family 6 Model 167 Stepping 1, GenuineIntel",
+    "cuda_device": "NVIDIA GeForce RTX 3060 Ti"
+   },
+   "fit_seconds": 61.3
+  },
+  "metal_nut": {
+   "model": "patchcore",
+   "category": "metal_nut",
+   "n_test": 115,
+   "n_calibration": 22,
+   "image": {
+    "auroc": 0.9970674486803519,
+    "ap": 0.999348321928967,
+    "threshold": 39.22158432006836,
+    "tp": 92,
+    "fp": 1,
+    "fn": 1,
+    "tn": 21,
+    "precision": 0.989247311827957,
+    "recall": 0.989247311827957,
+    "f1": 0.989247311827957,
+    "fpr": 0.045454545454545456,
+    "oracle_f1": 0.9945945945945946,
+    "oracle_threshold": 41.06491470336914
+   },
+   "pixel": {
+    "auroc": 0.9865531877497336,
+    "aupro": 0.9350349237963684,
+    "aupro_fpr_limit": 0.3,
+    "threshold": 38.167022705078125
+   },
+   "per_defect": {
+    "good": {
+     "n": 22,
+     "flagged": 1,
+     "rate": 0.045454545454545456,
+     "kind": "false_positive_rate"
+    },
+    "bent": {
+     "n": 25,
+     "flagged": 25,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "color": {
+     "n": 22,
+     "flagged": 21,
+     "rate": 0.9545454545454546,
+     "kind": "recall"
+    },
+    "flip": {
+     "n": 23,
+     "flagged": 23,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "scratch": {
+     "n": 23,
+     "flagged": 23,
+     "rate": 1.0,
+     "kind": "recall"
+    }
+   },
+   "calibration": {
+    "max_fpr": 0.05,
+    "image_threshold": 39.22158432006836,
+    "pixel_threshold": 38.167022705078125,
+    "pixel_low": 23.352394104003906,
+    "image_scores": [
+     34.99504089355469,
+     34.86566925048828,
+     36.51322555541992,
+     32.918174743652344,
+     35.1947135925293,
+     32.07851791381836,
+     34.3154296875,
+     33.75221633911133,
+     35.34438705444336,
+     34.03321075439453,
+     32.94721984863281,
+     33.67497253417969,
+     33.31697463989258,
+     37.70003128051758,
+     35.997703552246094,
+     32.54734802246094,
+     37.4240837097168,
+     39.22158432006836,
+     37.898033142089844,
+     35.51984786987305,
+     39.6285514831543,
+     36.742706298828125
+    ]
+   },
+   "timing": {
+    "ms_per_image_end_to_end": 25.7,
+    "device": "cuda:0",
+    "note": "includes image decoding and resizing; see the export benchmark for model latency"
+   },
+   "config": {
+    "data": {
+     "root": "E:\\portfolio\\datasets\\MVTecAD",
+     "category": "metal_nut",
+     "image_size": [
+      256,
+      256
+     ],
+     "calib_ratio": 0.1,
+     "seed": 42,
+     "max_test_samples": 0
+    },
+    "model": {
+     "patchcore": {
+      "backbone": "wide_resnet50_2",
+      "layers": [
+       "layer2",
+       "layer3"
+      ],
+      "coreset_sampling_ratio": 0.1,
+      "num_neighbors": 9
+     }
+    }
+   },
+   "environment": {
+    "python": "3.12.16",
+    "torch": "2.15.0+cu134",
+    "anomalib": "2.7.0",
+    "cpu": "Intel64 Family 6 Model 167 Stepping 1, GenuineIntel",
+    "cuda_device": "NVIDIA GeForce RTX 3060 Ti"
+   },
+   "fit_seconds": 48.1
+  },
+  "pill": {
+   "model": "patchcore",
+   "category": "pill",
+   "n_test": 167,
+   "n_calibration": 27,
+   "image": {
+    "auroc": 0.9473540643753409,
+    "ap": 0.9904853509592438,
+    "threshold": 35.4040412902832,
+    "tp": 126,
+    "fp": 3,
+    "fn": 15,
+    "tn": 23,
+    "precision": 0.9767441860465116,
+    "recall": 0.8936170212765957,
+    "f1": 0.9333333333333332,
+    "fpr": 0.11538461538461539,
+    "oracle_f1": 0.951048951048951,
+    "oracle_threshold": 32.891151428222656
+   },
+   "pixel": {
+    "auroc": 0.9804861866811441,
+    "aupro": 0.9407971828621328,
+    "aupro_fpr_limit": 0.3,
+    "threshold": 34.20867156982422
+   },
+   "per_defect": {
+    "good": {
+     "n": 26,
+     "flagged": 3,
+     "rate": 0.11538461538461539,
+     "kind": "false_positive_rate"
+    },
+    "color": {
+     "n": 25,
+     "flagged": 19,
+     "rate": 0.76,
+     "kind": "recall"
+    },
+    "combined": {
+     "n": 17,
+     "flagged": 17,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "contamination": {
+     "n": 21,
+     "flagged": 20,
+     "rate": 0.9523809523809523,
+     "kind": "recall"
+    },
+    "crack": {
+     "n": 26,
+     "flagged": 20,
+     "rate": 0.7692307692307693,
+     "kind": "recall"
+    },
+    "faulty_imprint": {
+     "n": 19,
+     "flagged": 19,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "pill_type": {
+     "n": 9,
+     "flagged": 9,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "scratch": {
+     "n": 24,
+     "flagged": 22,
+     "rate": 0.9166666666666666,
+     "kind": "recall"
+    }
+   },
+   "calibration": {
+    "max_fpr": 0.05,
+    "image_threshold": 35.4040412902832,
+    "pixel_threshold": 34.20867156982422,
+    "pixel_low": 20.357105255126953,
+    "image_scores": [
+     35.4040412902832,
+     30.650732040405273,
+     31.542308807373047,
+     31.738998413085938,
+     33.83937072753906,
+     28.413192749023438,
+     31.00779914855957,
+     31.92690086364746,
+     32.547325134277344,
+     32.26009750366211,
+     33.873443603515625,
+     35.57760238647461,
+     31.101428985595703,
+     32.16920471191406,
+     31.219654083251953,
+     33.17676544189453,
+     30.205944061279297,
+     32.64491271972656,
+     30.60730743408203,
+     34.18111038208008,
+     33.262733459472656,
+     30.95615577697754,
+     30.6004581451416,
+     34.04334259033203,
+     33.80764389038086,
+     30.212453842163086,
+     30.023176193237305
+    ]
+   },
+   "timing": {
+    "ms_per_image_end_to_end": 32.5,
+    "device": "cuda:0",
+    "note": "includes image decoding and resizing; see the export benchmark for model latency"
+   },
+   "config": {
+    "data": {
+     "root": "E:\\portfolio\\datasets\\MVTecAD",
+     "category": "pill",
+     "image_size": [
+      256,
+      256
+     ],
+     "calib_ratio": 0.1,
+     "seed": 42,
+     "max_test_samples": 0
+    },
+    "model": {
+     "patchcore": {
+      "backbone": "wide_resnet50_2",
+      "layers": [
+       "layer2",
+       "layer3"
+      ],
+      "coreset_sampling_ratio": 0.1,
+      "num_neighbors": 9
+     }
+    }
+   },
+   "environment": {
+    "python": "3.12.16",
+    "torch": "2.15.0+cu134",
+    "anomalib": "2.7.0",
+    "cpu": "Intel64 Family 6 Model 167 Stepping 1, GenuineIntel",
+    "cuda_device": "NVIDIA GeForce RTX 3060 Ti"
+   },
+   "fit_seconds": 70.7
+  },
+  "screw": {
+   "model": "patchcore",
+   "category": "screw",
+   "n_test": 160,
+   "n_calibration": 32,
+   "image": {
+    "auroc": 0.9754047960647674,
+    "ap": 0.9912213998774555,
+    "threshold": 31.67228889465332,
+    "tp": 107,
+    "fp": 4,
+    "fn": 12,
+    "tn": 37,
+    "precision": 0.963963963963964,
+    "recall": 0.8991596638655462,
+    "f1": 0.9304347826086956,
+    "fpr": 0.0975609756097561,
+    "oracle_f1": 0.9596774193548387,
+    "oracle_threshold": 30.285696029663086
+   },
+   "pixel": {
+    "auroc": 0.9893294894780557,
+    "aupro": 0.9416786634041449,
+    "aupro_fpr_limit": 0.3,
+    "threshold": 30.539043426513672
+   },
+   "per_defect": {
+    "good": {
+     "n": 41,
+     "flagged": 4,
+     "rate": 0.0975609756097561,
+     "kind": "false_positive_rate"
+    },
+    "manipulated_front": {
+     "n": 24,
+     "flagged": 19,
+     "rate": 0.7916666666666666,
+     "kind": "recall"
+    },
+    "scratch_head": {
+     "n": 24,
+     "flagged": 22,
+     "rate": 0.9166666666666666,
+     "kind": "recall"
+    },
+    "scratch_neck": {
+     "n": 25,
+     "flagged": 25,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "thread_side": {
+     "n": 23,
+     "flagged": 19,
+     "rate": 0.8260869565217391,
+     "kind": "recall"
+    },
+    "thread_top": {
+     "n": 23,
+     "flagged": 22,
+     "rate": 0.9565217391304348,
+     "kind": "recall"
+    }
+   },
+   "calibration": {
+    "max_fpr": 0.05,
+    "image_threshold": 31.67228889465332,
+    "pixel_threshold": 30.539043426513672,
+    "pixel_low": 20.282398223876953,
+    "image_scores": [
+     29.384553909301758,
+     31.09749412536621,
+     28.83266830444336,
+     29.20023536682129,
+     32.599449157714844,
+     24.147157669067383,
+     26.66205596923828,
+     28.553346633911133,
+     28.233354568481445,
+     29.82132339477539,
+     27.455503463745117,
+     27.42282485961914,
+     31.67228889465332,
+     26.411048889160156,
+     26.319917678833008,
+     27.26872444152832,
+     30.251445770263672,
+     29.18463897705078,
+     28.655405044555664,
+     28.563955307006836,
+     27.52574348449707,
+     26.141319274902344,
+     28.519399642944336,
+     28.21681785583496,
+     28.111469268798828,
+     29.027692794799805,
+     27.85088539123535,
+     29.440214157104492,
+     27.893163681030273,
+     29.932235717773438,
+     29.474390029907227,
+     25.873966217041016
+    ]
+   },
+   "timing": {
+    "ms_per_image_end_to_end": 30.9,
+    "device": "cuda:0",
+    "note": "includes image decoding and resizing; see the export benchmark for model latency"
+   },
+   "config": {
+    "data": {
+     "root": "E:\\portfolio\\datasets\\MVTecAD",
+     "category": "screw",
+     "image_size": [
+      256,
+      256
+     ],
+     "calib_ratio": 0.1,
+     "seed": 42,
+     "max_test_samples": 0
+    },
+    "model": {
+     "patchcore": {
+      "backbone": "wide_resnet50_2",
+      "layers": [
+       "layer2",
+       "layer3"
+      ],
+      "coreset_sampling_ratio": 0.1,
+      "num_neighbors": 9
+     }
+    }
+   },
+   "environment": {
+    "python": "3.12.16",
+    "torch": "2.15.0+cu134",
+    "anomalib": "2.7.0",
+    "cpu": "Intel64 Family 6 Model 167 Stepping 1, GenuineIntel",
+    "cuda_device": "NVIDIA GeForce RTX 3060 Ti"
+   },
+   "fit_seconds": 97.6
+  },
+  "tile": {
+   "model": "patchcore",
+   "category": "tile",
+   "n_test": 117,
+   "n_calibration": 23,
+   "image": {
+    "auroc": 1.0,
+    "ap": 0.9999999999999998,
+    "threshold": 34.61127471923828,
+    "tp": 84,
+    "fp": 2,
+    "fn": 0,
+    "tn": 31,
+    "precision": 0.9767441860465116,
+    "recall": 1.0,
+    "f1": 0.988235294117647,
+    "fpr": 0.06060606060606061,
+    "oracle_f1": 1.0,
+    "oracle_threshold": 37.32160186767578
+   },
+   "pixel": {
+    "auroc": 0.9554382463389544,
+    "aupro": 0.8597566704959488,
+    "aupro_fpr_limit": 0.3,
+    "threshold": 33.960182189941406
+   },
+   "per_defect": {
+    "good": {
+     "n": 33,
+     "flagged": 2,
+     "rate": 0.06060606060606061,
+     "kind": "false_positive_rate"
+    },
+    "crack": {
+     "n": 17,
+     "flagged": 17,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "glue_strip": {
+     "n": 18,
+     "flagged": 18,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "gray_stroke": {
+     "n": 16,
+     "flagged": 16,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "oil": {
+     "n": 18,
+     "flagged": 18,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "rough": {
+     "n": 15,
+     "flagged": 15,
+     "rate": 1.0,
+     "kind": "recall"
+    }
+   },
+   "calibration": {
+    "max_fpr": 0.05,
+    "image_threshold": 34.61127471923828,
+    "pixel_threshold": 33.960182189941406,
+    "pixel_low": 25.044071197509766,
+    "image_scores": [
+     32.877967834472656,
+     31.689987182617188,
+     31.827577590942383,
+     32.4790153503418,
+     32.200225830078125,
+     32.260494232177734,
+     33.09333038330078,
+     31.187572479248047,
+     29.615476608276367,
+     31.474815368652344,
+     32.78662872314453,
+     31.290958404541016,
+     40.7932014465332,
+     31.75409507751465,
+     32.8959846496582,
+     30.8953800201416,
+     31.97290802001953,
+     32.06842803955078,
+     33.449737548828125,
+     34.61127471923828,
+     32.47798538208008,
+     32.13572692871094,
+     30.831350326538086
+    ]
+   },
+   "timing": {
+    "ms_per_image_end_to_end": 34.3,
+    "device": "cuda:0",
+    "note": "includes image decoding and resizing; see the export benchmark for model latency"
+   },
+   "config": {
+    "data": {
+     "root": "E:\\portfolio\\datasets\\MVTecAD",
+     "category": "tile",
+     "image_size": [
+      256,
+      256
+     ],
+     "calib_ratio": 0.1,
+     "seed": 42,
+     "max_test_samples": 0
+    },
+    "model": {
+     "patchcore": {
+      "backbone": "wide_resnet50_2",
+      "layers": [
+       "layer2",
+       "layer3"
+      ],
+      "coreset_sampling_ratio": 0.1,
+      "num_neighbors": 9
+     }
+    }
+   },
+   "environment": {
+    "python": "3.12.16",
+    "torch": "2.15.0+cu134",
+    "anomalib": "2.7.0",
+    "cpu": "Intel64 Family 6 Model 167 Stepping 1, GenuineIntel",
+    "cuda_device": "NVIDIA GeForce RTX 3060 Ti"
+   },
+   "fit_seconds": 55.8
+  },
+  "toothbrush": {
+   "model": "patchcore",
+   "category": "toothbrush",
+   "n_test": 42,
+   "n_calibration": 6,
+   "image": {
+    "auroc": 0.9138888888888889,
+    "ap": 0.9623426970020104,
+    "threshold": 32.27864456176758,
+    "tp": 30,
+    "fp": 3,
+    "fn": 0,
+    "tn": 9,
+    "precision": 0.9090909090909091,
+    "recall": 1.0,
+    "f1": 0.9523809523809523,
+    "fpr": 0.25,
+    "oracle_f1": 0.9523809523809523,
+    "oracle_threshold": 34.409217834472656
+   },
+   "pixel": {
+    "auroc": 0.9885862244542273,
+    "aupro": 0.8833573087805735,
+    "aupro_fpr_limit": 0.3,
+    "threshold": 30.75885772705078
+   },
+   "per_defect": {
+    "good": {
+     "n": 12,
+     "flagged": 3,
+     "rate": 0.25,
+     "kind": "false_positive_rate"
+    },
+    "defective": {
+     "n": 30,
+     "flagged": 30,
+     "rate": 1.0,
+     "kind": "recall"
+    }
+   },
+   "calibration": {
+    "max_fpr": 0.05,
+    "image_threshold": 32.27864456176758,
+    "pixel_threshold": 30.75885772705078,
+    "pixel_low": 18.50257110595703,
+    "image_scores": [
+     32.27864456176758,
+     31.818063735961914,
+     28.94537925720215,
+     29.111528396606445,
+     27.26490592956543,
+     29.978759765625
+    ]
+   },
+   "timing": {
+    "ms_per_image_end_to_end": 32.1,
+    "device": "cuda:0",
+    "note": "includes image decoding and resizing; see the export benchmark for model latency"
+   },
+   "config": {
+    "data": {
+     "root": "E:\\portfolio\\datasets\\MVTecAD",
+     "category": "toothbrush",
+     "image_size": [
+      256,
+      256
+     ],
+     "calib_ratio": 0.1,
+     "seed": 42,
+     "max_test_samples": 0
+    },
+    "model": {
+     "patchcore": {
+      "backbone": "wide_resnet50_2",
+      "layers": [
+       "layer2",
+       "layer3"
+      ],
+      "coreset_sampling_ratio": 0.1,
+      "num_neighbors": 9
+     }
+    }
+   },
+   "environment": {
+    "python": "3.12.16",
+    "torch": "2.15.0+cu134",
+    "anomalib": "2.7.0",
+    "cpu": "Intel64 Family 6 Model 167 Stepping 1, GenuineIntel",
+    "cuda_device": "NVIDIA GeForce RTX 3060 Ti"
+   },
+   "fit_seconds": 9.7
+  },
+  "transistor": {
+   "model": "patchcore",
+   "category": "transistor",
+   "n_test": 100,
+   "n_calibration": 21,
+   "image": {
+    "auroc": 0.9929166666666667,
+    "ap": 0.9905024729479159,
+    "threshold": 39.27228546142578,
+    "tp": 37,
+    "fp": 2,
+    "fn": 3,
+    "tn": 58,
+    "precision": 0.9487179487179487,
+    "recall": 0.925,
+    "f1": 0.9367088607594937,
+    "fpr": 0.03333333333333333,
+    "oracle_f1": 0.9629629629629629,
+    "oracle_threshold": 38.01253890991211
+   },
+   "pixel": {
+    "auroc": 0.9717784722829718,
+    "aupro": 0.9441384212318457,
+    "aupro_fpr_limit": 0.3,
+    "threshold": 37.79277420043945
+   },
+   "per_defect": {
+    "good": {
+     "n": 60,
+     "flagged": 2,
+     "rate": 0.03333333333333333,
+     "kind": "false_positive_rate"
+    },
+    "bent_lead": {
+     "n": 10,
+     "flagged": 9,
+     "rate": 0.9,
+     "kind": "recall"
+    },
+    "cut_lead": {
+     "n": 10,
+     "flagged": 10,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "damaged_case": {
+     "n": 10,
+     "flagged": 10,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "misplaced": {
+     "n": 10,
+     "flagged": 8,
+     "rate": 0.8,
+     "kind": "recall"
+    }
+   },
+   "calibration": {
+    "max_fpr": 0.05,
+    "image_threshold": 39.27228546142578,
+    "pixel_threshold": 37.79277420043945,
+    "pixel_low": 24.329158782958984,
+    "image_scores": [
+     33.05926513671875,
+     33.91769790649414,
+     34.601829528808594,
+     34.44442367553711,
+     36.655208587646484,
+     32.053218841552734,
+     34.25522232055664,
+     31.673877716064453,
+     31.191423416137695,
+     43.571964263916016,
+     33.27842330932617,
+     39.27228546142578,
+     33.489227294921875,
+     33.25023651123047,
+     35.26578140258789,
+     34.766502380371094,
+     34.59966278076172,
+     33.71625900268555,
+     34.6807746887207,
+     32.18102264404297,
+     34.14365768432617
+    ]
+   },
+   "timing": {
+    "ms_per_image_end_to_end": 41.4,
+    "device": "cuda:0",
+    "note": "includes image decoding and resizing; see the export benchmark for model latency"
+   },
+   "config": {
+    "data": {
+     "root": "E:\\portfolio\\datasets\\MVTecAD",
+     "category": "transistor",
+     "image_size": [
+      256,
+      256
+     ],
+     "calib_ratio": 0.1,
+     "seed": 42,
+     "max_test_samples": 0
+    },
+    "model": {
+     "patchcore": {
+      "backbone": "wide_resnet50_2",
+      "layers": [
+       "layer2",
+       "layer3"
+      ],
+      "coreset_sampling_ratio": 0.1,
+      "num_neighbors": 9
+     }
+    }
+   },
+   "environment": {
+    "python": "3.12.16",
+    "torch": "2.15.0+cu134",
+    "anomalib": "2.7.0",
+    "cpu": "Intel64 Family 6 Model 167 Stepping 1, GenuineIntel",
+    "cuda_device": "NVIDIA GeForce RTX 3060 Ti"
+   },
+   "fit_seconds": 49.1
+  },
+  "wood": {
+   "model": "patchcore",
+   "category": "wood",
+   "n_test": 79,
+   "n_calibration": 25,
+   "image": {
+    "auroc": 0.987719298245614,
+    "ap": 0.9964111724305283,
+    "threshold": 33.76359176635742,
+    "tp": 60,
+    "fp": 10,
+    "fn": 0,
+    "tn": 9,
+    "precision": 0.8571428571428571,
+    "recall": 1.0,
+    "f1": 0.923076923076923,
+    "fpr": 0.5263157894736842,
+    "oracle_f1": 0.9747899159663865,
+    "oracle_threshold": 42.609432220458984
+   },
+   "pixel": {
+    "auroc": 0.9308582549907226,
+    "aupro": 0.8846057261675172,
+    "aupro_fpr_limit": 0.3,
+    "threshold": 32.288307189941406
+   },
+   "per_defect": {
+    "good": {
+     "n": 19,
+     "flagged": 10,
+     "rate": 0.5263157894736842,
+     "kind": "false_positive_rate"
+    },
+    "color": {
+     "n": 8,
+     "flagged": 8,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "combined": {
+     "n": 11,
+     "flagged": 11,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "hole": {
+     "n": 10,
+     "flagged": 10,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "liquid": {
+     "n": 10,
+     "flagged": 10,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "scratch": {
+     "n": 21,
+     "flagged": 21,
+     "rate": 1.0,
+     "kind": "recall"
+    }
+   },
+   "calibration": {
+    "max_fpr": 0.05,
+    "image_threshold": 33.76359176635742,
+    "pixel_threshold": 32.288307189941406,
+    "pixel_low": 23.33676528930664,
+    "image_scores": [
+     29.027576446533203,
+     31.89797592163086,
+     30.084081649780273,
+     29.930248260498047,
+     32.398963928222656,
+     31.49168586730957,
+     33.14963150024414,
+     31.721027374267578,
+     32.5418701171875,
+     31.323474884033203,
+     35.09977340698242,
+     32.997371673583984,
+     32.9608268737793,
+     32.18268966674805,
+     29.122161865234375,
+     27.87246322631836,
+     28.23465919494629,
+     28.904550552368164,
+     30.885852813720703,
+     29.109817504882812,
+     28.852706909179688,
+     28.094255447387695,
+     33.76359176635742,
+     29.398681640625,
+     29.05008316040039
+    ]
+   },
+   "timing": {
+    "ms_per_image_end_to_end": 43.6,
+    "device": "cuda:0",
+    "note": "includes image decoding and resizing; see the export benchmark for model latency"
+   },
+   "config": {
+    "data": {
+     "root": "E:\\portfolio\\datasets\\MVTecAD",
+     "category": "wood",
+     "image_size": [
+      256,
+      256
+     ],
+     "calib_ratio": 0.1,
+     "seed": 42,
+     "max_test_samples": 0
+    },
+    "model": {
+     "patchcore": {
+      "backbone": "wide_resnet50_2",
+      "layers": [
+       "layer2",
+       "layer3"
+      ],
+      "coreset_sampling_ratio": 0.1,
+      "num_neighbors": 9
+     }
+    }
+   },
+   "environment": {
+    "python": "3.12.16",
+    "torch": "2.15.0+cu134",
+    "anomalib": "2.7.0",
+    "cpu": "Intel64 Family 6 Model 167 Stepping 1, GenuineIntel",
+    "cuda_device": "NVIDIA GeForce RTX 3060 Ti"
+   },
+   "fit_seconds": 63.2
+  },
+  "zipper": {
+   "model": "patchcore",
+   "category": "zipper",
+   "n_test": 151,
+   "n_calibration": 24,
+   "image": {
+    "auroc": 0.978203781512605,
+    "ap": 0.9934946361892381,
+    "threshold": 26.29839324951172,
+    "tp": 118,
+    "fp": 7,
+    "fn": 1,
+    "tn": 25,
+    "precision": 0.944,
+    "recall": 0.9915966386554622,
+    "f1": 0.9672131147540983,
+    "fpr": 0.21875,
+    "oracle_f1": 0.979253112033195,
+    "oracle_threshold": 29.18094825744629
+   },
+   "pixel": {
+    "auroc": 0.9811102372930125,
+    "aupro": 0.9326449406803471,
+    "aupro_fpr_limit": 0.3,
+    "threshold": 25.612550735473633
+   },
+   "per_defect": {
+    "good": {
+     "n": 32,
+     "flagged": 7,
+     "rate": 0.21875,
+     "kind": "false_positive_rate"
+    },
+    "broken_teeth": {
+     "n": 19,
+     "flagged": 19,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "combined": {
+     "n": 16,
+     "flagged": 16,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "fabric_border": {
+     "n": 17,
+     "flagged": 17,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "fabric_interior": {
+     "n": 16,
+     "flagged": 15,
+     "rate": 0.9375,
+     "kind": "recall"
+    },
+    "rough": {
+     "n": 17,
+     "flagged": 17,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "split_teeth": {
+     "n": 18,
+     "flagged": 18,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "squeezed_teeth": {
+     "n": 16,
+     "flagged": 16,
+     "rate": 1.0,
+     "kind": "recall"
+    }
+   },
+   "calibration": {
+    "max_fpr": 0.05,
+    "image_threshold": 26.29839324951172,
+    "pixel_threshold": 25.612550735473633,
+    "pixel_low": 16.235734939575195,
+    "image_scores": [
+     20.146923065185547,
+     22.06418800354004,
+     20.50501251220703,
+     23.378257751464844,
+     20.097097396850586,
+     22.017379760742188,
+     19.598163604736328,
+     23.226806640625,
+     21.977943420410156,
+     20.267770767211914,
+     28.402259826660156,
+     22.883012771606445,
+     21.224145889282227,
+     21.446630477905273,
+     24.20675277709961,
+     26.27073860168457,
+     22.44440460205078,
+     26.29839324951172,
+     25.9224910736084,
+     19.372156143188477,
+     24.241907119750977,
+     23.118824005126953,
+     21.212507247924805,
+     22.9143009185791
+    ]
+   },
+   "timing": {
+    "ms_per_image_end_to_end": 26.6,
+    "device": "cuda:0",
+    "note": "includes image decoding and resizing; see the export benchmark for model latency"
+   },
+   "config": {
+    "data": {
+     "root": "E:\\portfolio\\datasets\\MVTecAD",
+     "category": "zipper",
+     "image_size": [
+      256,
+      256
+     ],
+     "calib_ratio": 0.1,
+     "seed": 42,
+     "max_test_samples": 0
+    },
+    "model": {
+     "patchcore": {
+      "backbone": "wide_resnet50_2",
+      "layers": [
+       "layer2",
+       "layer3"
+      ],
+      "coreset_sampling_ratio": 0.1,
+      "num_neighbors": 9
+     }
+    }
+   },
+   "environment": {
+    "python": "3.12.16",
+    "torch": "2.15.0+cu134",
+    "anomalib": "2.7.0",
+    "cpu": "Intel64 Family 6 Model 167 Stepping 1, GenuineIntel",
+    "cuda_device": "NVIDIA GeForce RTX 3060 Ti"
+   },
+   "fit_seconds": 56.1
+  }
+ },
+ "padim": {
+  "bottle": {
+   "model": "padim",
+   "category": "bottle",
+   "n_test": 83,
+   "n_calibration": 21,
+   "image": {
+    "auroc": 0.9984126984126984,
+    "ap": 0.999500031494079,
+    "threshold": 29.03086280822754,
+    "tp": 63,
+    "fp": 2,
+    "fn": 0,
+    "tn": 18,
+    "precision": 0.9692307692307692,
+    "recall": 1.0,
+    "f1": 0.9843749999999999,
+    "fpr": 0.1,
+    "oracle_f1": 0.9921259842519685,
+    "oracle_threshold": 37.14657974243164
+   },
+   "pixel": {
+    "auroc": 0.9813570419645031,
+    "aupro": 0.9302096557534838,
+    "aupro_fpr_limit": 0.3,
+    "threshold": 29.03086280822754
+   },
+   "per_defect": {
+    "good": {
+     "n": 20,
+     "flagged": 2,
+     "rate": 0.1,
+     "kind": "false_positive_rate"
+    },
+    "broken_large": {
+     "n": 20,
+     "flagged": 20,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "broken_small": {
+     "n": 22,
+     "flagged": 22,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "contamination": {
+     "n": 21,
+     "flagged": 21,
+     "rate": 1.0,
+     "kind": "recall"
+    }
+   },
+   "calibration": {
+    "max_fpr": 0.05,
+    "image_threshold": 29.03086280822754,
+    "pixel_threshold": 29.03086280822754,
+    "pixel_low": 6.922440052032471,
+    "image_scores": [
+     14.956521987915039,
+     16.2833194732666,
+     17.63459587097168,
+     15.629185676574707,
+     20.733503341674805,
+     21.47967529296875,
+     75.54864501953125,
+     17.111173629760742,
+     19.013629913330078,
+     29.03086280822754,
+     20.722043991088867,
+     19.10659408569336,
+     12.010702133178711,
+     17.641883850097656,
+     21.369853973388672,
+     19.514667510986328,
+     12.458823204040527,
+     21.58856201171875,
+     19.1507625579834,
+     16.881376266479492,
+     15.735400199890137
+    ]
+   },
+   "timing": {
+    "ms_per_image_end_to_end": 16.6,
+    "device": "cuda:0",
+    "note": "includes image decoding and resizing; see the export benchmark for model latency"
+   },
+   "config": {
+    "data": {
+     "root": "E:\\portfolio\\datasets\\MVTecAD",
+     "category": "bottle",
+     "image_size": [
+      256,
+      256
+     ],
+     "calib_ratio": 0.1,
+     "seed": 42,
+     "max_test_samples": 0
+    },
+    "model": {
+     "padim": {
+      "backbone": "resnet18",
+      "layers": [
+       "layer1",
+       "layer2",
+       "layer3"
+      ]
+     }
+    }
+   },
+   "environment": {
+    "python": "3.12.16",
+    "torch": "2.15.0+cu134",
+    "anomalib": "2.7.0",
+    "cpu": "Intel64 Family 6 Model 167 Stepping 1, GenuineIntel",
+    "cuda_device": "NVIDIA GeForce RTX 3060 Ti"
+   },
+   "fit_seconds": 7.2
+  },
+  "cable": {
+   "model": "padim",
+   "category": "cable",
+   "n_test": 150,
+   "n_calibration": 22,
+   "image": {
+    "auroc": 0.8543853073463268,
+    "ap": 0.8982858384699864,
+    "threshold": 33.49650955200195,
+    "tp": 71,
+    "fp": 13,
+    "fn": 21,
+    "tn": 45,
+    "precision": 0.8452380952380952,
+    "recall": 0.7717391304347826,
+    "f1": 0.8068181818181818,
+    "fpr": 0.22413793103448276,
+    "oracle_f1": 0.8541666666666666,
+    "oracle_threshold": 29.394149780273438
+   },
+   "pixel": {
+    "auroc": 0.9654573576923348,
+    "aupro": 0.8734423943481318,
+    "aupro_fpr_limit": 0.3,
+    "threshold": 33.49650955200195
+   },
+   "per_defect": {
+    "good": {
+     "n": 58,
+     "flagged": 13,
+     "rate": 0.22413793103448276,
+     "kind": "false_positive_rate"
+    },
+    "bent_wire": {
+     "n": 13,
+     "flagged": 13,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "cable_swap": {
+     "n": 12,
+     "flagged": 8,
+     "rate": 0.6666666666666666,
+     "kind": "recall"
+    },
+    "combined": {
+     "n": 11,
+     "flagged": 10,
+     "rate": 0.9090909090909091,
+     "kind": "recall"
+    },
+    "cut_inner_insulation": {
+     "n": 14,
+     "flagged": 11,
+     "rate": 0.7857142857142857,
+     "kind": "recall"
+    },
+    "cut_outer_insulation": {
+     "n": 10,
+     "flagged": 9,
+     "rate": 0.9,
+     "kind": "recall"
+    },
+    "missing_cable": {
+     "n": 12,
+     "flagged": 10,
+     "rate": 0.8333333333333334,
+     "kind": "recall"
+    },
+    "missing_wire": {
+     "n": 10,
+     "flagged": 4,
+     "rate": 0.4,
+     "kind": "recall"
+    },
+    "poke_insulation": {
+     "n": 10,
+     "flagged": 6,
+     "rate": 0.6,
+     "kind": "recall"
+    }
+   },
+   "calibration": {
+    "max_fpr": 0.05,
+    "image_threshold": 33.49650955200195,
+    "pixel_threshold": 33.49650955200195,
+    "pixel_low": 10.408038139343262,
+    "image_scores": [
+     19.36133575439453,
+     23.47209930419922,
+     24.897212982177734,
+     22.797100067138672,
+     23.92962646484375,
+     23.28960609436035,
+     33.49650955200195,
+     23.846330642700195,
+     22.301042556762695,
+     22.031105041503906,
+     25.653867721557617,
+     27.731569290161133,
+     28.504117965698242,
+     29.459482192993164,
+     24.7395076751709,
+     36.826480865478516,
+     22.955074310302734,
+     24.697391510009766,
+     18.798770904541016,
+     30.43251609802246,
+     25.491579055786133,
+     22.483749389648438
+    ]
+   },
+   "timing": {
+    "ms_per_image_end_to_end": 36.2,
+    "device": "cuda:0",
+    "note": "includes image decoding and resizing; see the export benchmark for model latency"
+   },
+   "config": {
+    "data": {
+     "root": "E:\\portfolio\\datasets\\MVTecAD",
+     "category": "cable",
+     "image_size": [
+      256,
+      256
+     ],
+     "calib_ratio": 0.1,
+     "seed": 42,
+     "max_test_samples": 0
+    },
+    "model": {
+     "padim": {
+      "backbone": "resnet18",
+      "layers": [
+       "layer1",
+       "layer2",
+       "layer3"
+      ]
+     }
+    }
+   },
+   "environment": {
+    "python": "3.12.16",
+    "torch": "2.15.0+cu134",
+    "anomalib": "2.7.0",
+    "cpu": "Intel64 Family 6 Model 167 Stepping 1, GenuineIntel",
+    "cuda_device": "NVIDIA GeForce RTX 3060 Ti"
+   },
+   "fit_seconds": 9.8
+  },
+  "capsule": {
+   "model": "padim",
+   "category": "capsule",
+   "n_test": 132,
+   "n_calibration": 22,
+   "image": {
+    "auroc": 0.8899082568807339,
+    "ap": 0.9667243207659268,
+    "threshold": 76.6159439086914,
+    "tp": 21,
+    "fp": 0,
+    "fn": 88,
+    "tn": 23,
+    "precision": 1.0,
+    "recall": 0.1926605504587156,
+    "f1": 0.3230769230769231,
+    "fpr": 0.0,
+    "oracle_f1": 0.9553571428571428,
+    "oracle_threshold": 26.277759552001953
+   },
+   "pixel": {
+    "auroc": 0.9814980562941107,
+    "aupro": 0.8928096322198786,
+    "aupro_fpr_limit": 0.3,
+    "threshold": 76.6159439086914
+   },
+   "per_defect": {
+    "good": {
+     "n": 23,
+     "flagged": 0,
+     "rate": 0.0,
+     "kind": "false_positive_rate"
+    },
+    "crack": {
+     "n": 23,
+     "flagged": 8,
+     "rate": 0.34782608695652173,
+     "kind": "recall"
+    },
+    "faulty_imprint": {
+     "n": 22,
+     "flagged": 0,
+     "rate": 0.0,
+     "kind": "recall"
+    },
+    "poke": {
+     "n": 21,
+     "flagged": 2,
+     "rate": 0.09523809523809523,
+     "kind": "recall"
+    },
+    "scratch": {
+     "n": 23,
+     "flagged": 2,
+     "rate": 0.08695652173913043,
+     "kind": "recall"
+    },
+    "squeeze": {
+     "n": 20,
+     "flagged": 9,
+     "rate": 0.45,
+     "kind": "recall"
+    }
+   },
+   "calibration": {
+    "max_fpr": 0.05,
+    "image_threshold": 76.6159439086914,
+    "pixel_threshold": 76.6159439086914,
+    "pixel_low": 7.537325859069824,
+    "image_scores": [
+     24.863466262817383,
+     76.6159439086914,
+     19.54920768737793,
+     16.138620376586914,
+     14.243680000305176,
+     18.855716705322266,
+     24.695608139038086,
+     42.44322967529297,
+     76.63827514648438,
+     12.429596900939941,
+     16.922435760498047,
+     23.28070640563965,
+     15.971012115478516,
+     63.253265380859375,
+     45.43555450439453,
+     30.18431282043457,
+     35.383216857910156,
+     40.03375244140625,
+     21.460182189941406,
+     18.02213478088379,
+     14.512185096740723,
+     55.904048919677734
+    ]
+   },
+   "timing": {
+    "ms_per_image_end_to_end": 36.9,
+    "device": "cuda:0",
+    "note": "includes image decoding and resizing; see the export benchmark for model latency"
+   },
+   "config": {
+    "data": {
+     "root": "E:\\portfolio\\datasets\\MVTecAD",
+     "category": "capsule",
+     "image_size": [
+      256,
+      256
+     ],
+     "calib_ratio": 0.1,
+     "seed": 42,
+     "max_test_samples": 0
+    },
+    "model": {
+     "padim": {
+      "backbone": "resnet18",
+      "layers": [
+       "layer1",
+       "layer2",
+       "layer3"
+      ]
+     }
+    }
+   },
+   "environment": {
+    "python": "3.12.16",
+    "torch": "2.15.0+cu134",
+    "anomalib": "2.7.0",
+    "cpu": "Intel64 Family 6 Model 167 Stepping 1, GenuineIntel",
+    "cuda_device": "NVIDIA GeForce RTX 3060 Ti"
+   },
+   "fit_seconds": 9.6
+  },
+  "carpet": {
+   "model": "padim",
+   "category": "carpet",
+   "n_test": 117,
+   "n_calibration": 28,
+   "image": {
+    "auroc": 0.9863563402889245,
+    "ap": 0.9960832535492525,
+    "threshold": 28.777137756347656,
+    "tp": 83,
+    "fp": 1,
+    "fn": 6,
+    "tn": 27,
+    "precision": 0.9880952380952381,
+    "recall": 0.9325842696629213,
+    "f1": 0.9595375722543353,
+    "fpr": 0.03571428571428571,
+    "oracle_f1": 0.9772727272727273,
+    "oracle_threshold": 26.511510848999023
+   },
+   "pixel": {
+    "auroc": 0.9883915634399667,
+    "aupro": 0.9494300390512889,
+    "aupro_fpr_limit": 0.3,
+    "threshold": 28.777137756347656
+   },
+   "per_defect": {
+    "good": {
+     "n": 28,
+     "flagged": 1,
+     "rate": 0.03571428571428571,
+     "kind": "false_positive_rate"
+    },
+    "color": {
+     "n": 19,
+     "flagged": 17,
+     "rate": 0.8947368421052632,
+     "kind": "recall"
+    },
+    "cut": {
+     "n": 17,
+     "flagged": 17,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "hole": {
+     "n": 17,
+     "flagged": 17,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "metal_contamination": {
+     "n": 17,
+     "flagged": 15,
+     "rate": 0.8823529411764706,
+     "kind": "recall"
+    },
+    "thread": {
+     "n": 19,
+     "flagged": 17,
+     "rate": 0.8947368421052632,
+     "kind": "recall"
+    }
+   },
+   "calibration": {
+    "max_fpr": 0.05,
+    "image_threshold": 28.777137756347656,
+    "pixel_threshold": 28.777137756347656,
+    "pixel_low": 8.993013381958008,
+    "image_scores": [
+     20.605194091796875,
+     18.89105796813965,
+     22.331993103027344,
+     18.52899169921875,
+     17.008115768432617,
+     18.764528274536133,
+     14.568001747131348,
+     24.502288818359375,
+     27.627531051635742,
+     28.777137756347656,
+     17.96646499633789,
+     20.52387809753418,
+     19.41935157775879,
+     24.777511596679688,
+     21.541934967041016,
+     17.131994247436523,
+     16.97292709350586,
+     21.157215118408203,
+     22.368305206298828,
+     25.443557739257812,
+     22.05489730834961,
+     16.602201461791992,
+     23.051433563232422,
+     18.087753295898438,
+     21.565324783325195,
+     23.59598159790039,
+     29.335851669311523,
+     17.303295135498047
+    ]
+   },
+   "timing": {
+    "ms_per_image_end_to_end": 32.2,
+    "device": "cuda:0",
+    "note": "includes image decoding and resizing; see the export benchmark for model latency"
+   },
+   "config": {
+    "data": {
+     "root": "E:\\portfolio\\datasets\\MVTecAD",
+     "category": "carpet",
+     "image_size": [
+      256,
+      256
+     ],
+     "calib_ratio": 0.1,
+     "seed": 42,
+     "max_test_samples": 0
+    },
+    "model": {
+     "padim": {
+      "backbone": "resnet18",
+      "layers": [
+       "layer1",
+       "layer2",
+       "layer3"
+      ]
+     }
+    }
+   },
+   "environment": {
+    "python": "3.12.16",
+    "torch": "2.15.0+cu134",
+    "anomalib": "2.7.0",
+    "cpu": "Intel64 Family 6 Model 167 Stepping 1, GenuineIntel",
+    "cuda_device": "NVIDIA GeForce RTX 3060 Ti"
+   },
+   "fit_seconds": 11.2
+  },
+  "grid": {
+   "model": "padim",
+   "category": "grid",
+   "n_test": 78,
+   "n_calibration": 26,
+   "image": {
+    "auroc": 0.8404344193817879,
+    "ap": 0.9363251581943133,
+    "threshold": 27.275421142578125,
+    "tp": 29,
+    "fp": 3,
+    "fn": 28,
+    "tn": 18,
+    "precision": 0.90625,
+    "recall": 0.5087719298245614,
+    "f1": 0.651685393258427,
+    "fpr": 0.14285714285714285,
+    "oracle_f1": 0.8813559322033898,
+    "oracle_threshold": 18.565662384033203
+   },
+   "pixel": {
+    "auroc": 0.9301691159674371,
+    "aupro": 0.8097069609250535,
+    "aupro_fpr_limit": 0.3,
+    "threshold": 27.275421142578125
+   },
+   "per_defect": {
+    "good": {
+     "n": 21,
+     "flagged": 3,
+     "rate": 0.14285714285714285,
+     "kind": "false_positive_rate"
+    },
+    "bent": {
+     "n": 12,
+     "flagged": 7,
+     "rate": 0.5833333333333334,
+     "kind": "recall"
+    },
+    "broken": {
+     "n": 12,
+     "flagged": 9,
+     "rate": 0.75,
+     "kind": "recall"
+    },
+    "glue": {
+     "n": 11,
+     "flagged": 2,
+     "rate": 0.18181818181818182,
+     "kind": "recall"
+    },
+    "metal_contamination": {
+     "n": 11,
+     "flagged": 5,
+     "rate": 0.45454545454545453,
+     "kind": "recall"
+    },
+    "thread": {
+     "n": 11,
+     "flagged": 6,
+     "rate": 0.5454545454545454,
+     "kind": "recall"
+    }
+   },
+   "calibration": {
+    "max_fpr": 0.05,
+    "image_threshold": 27.275421142578125,
+    "pixel_threshold": 27.275421142578125,
+    "pixel_low": 9.616085052490234,
+    "image_scores": [
+     15.712325096130371,
+     14.506353378295898,
+     19.646818161010742,
+     16.71820068359375,
+     14.09439468383789,
+     17.868764877319336,
+     12.865443229675293,
+     29.469202041625977,
+     16.573495864868164,
+     16.04263687133789,
+     21.636455535888672,
+     16.263965606689453,
+     14.517141342163086,
+     16.48812484741211,
+     15.129837036132812,
+     19.52762794494629,
+     14.615194320678711,
+     15.566422462463379,
+     16.43950653076172,
+     14.720330238342285,
+     19.20525360107422,
+     16.498197555541992,
+     27.275421142578125,
+     19.669334411621094,
+     17.157381057739258,
+     18.20528221130371
+    ]
+   },
+   "timing": {
+    "ms_per_image_end_to_end": 14.5,
+    "device": "cuda:0",
+    "note": "includes image decoding and resizing; see the export benchmark for model latency"
+   },
+   "config": {
+    "data": {
+     "root": "E:\\portfolio\\datasets\\MVTecAD",
+     "category": "grid",
+     "image_size": [
+      256,
+      256
+     ],
+     "calib_ratio": 0.1,
+     "seed": 42,
+     "max_test_samples": 0
+    },
+    "model": {
+     "padim": {
+      "backbone": "resnet18",
+      "layers": [
+       "layer1",
+       "layer2",
+       "layer3"
+      ]
+     }
+    }
+   },
+   "environment": {
+    "python": "3.12.16",
+    "torch": "2.15.0+cu134",
+    "anomalib": "2.7.0",
+    "cpu": "Intel64 Family 6 Model 167 Stepping 1, GenuineIntel",
+    "cuda_device": "NVIDIA GeForce RTX 3060 Ti"
+   },
+   "fit_seconds": 7.4
+  },
+  "hazelnut": {
+   "model": "padim",
+   "category": "hazelnut",
+   "n_test": 110,
+   "n_calibration": 39,
+   "image": {
+    "auroc": 0.6167857142857143,
+    "ap": 0.7046567765284186,
+    "threshold": 48.9219856262207,
+    "tp": 27,
+    "fp": 13,
+    "fn": 43,
+    "tn": 27,
+    "precision": 0.675,
+    "recall": 0.38571428571428573,
+    "f1": 0.49090909090909096,
+    "fpr": 0.325,
+    "oracle_f1": 0.8092485549132947,
+    "oracle_threshold": 24.459901809692383
+   },
+   "pixel": {
+    "auroc": 0.9686663551526498,
+    "aupro": 0.8273666262286755,
+    "aupro_fpr_limit": 0.3,
+    "threshold": 48.9219856262207
+   },
+   "per_defect": {
+    "good": {
+     "n": 40,
+     "flagged": 13,
+     "rate": 0.325,
+     "kind": "false_positive_rate"
+    },
+    "crack": {
+     "n": 18,
+     "flagged": 6,
+     "rate": 0.3333333333333333,
+     "kind": "recall"
+    },
+    "cut": {
+     "n": 17,
+     "flagged": 10,
+     "rate": 0.5882352941176471,
+     "kind": "recall"
+    },
+    "hole": {
+     "n": 18,
+     "flagged": 8,
+     "rate": 0.4444444444444444,
+     "kind": "recall"
+    },
+    "print": {
+     "n": 17,
+     "flagged": 3,
+     "rate": 0.17647058823529413,
+     "kind": "recall"
+    }
+   },
+   "calibration": {
+    "max_fpr": 0.05,
+    "image_threshold": 48.9219856262207,
+    "pixel_threshold": 48.9219856262207,
+    "pixel_low": 8.965005874633789,
+    "image_scores": [
+     21.41482925415039,
+     18.23160171508789,
+     23.17253303527832,
+     32.4925537109375,
+     30.04693031311035,
+     20.539121627807617,
+     24.682104110717773,
+     48.9219856262207,
+     19.3482666015625,
+     32.65105056762695,
+     26.301666259765625,
+     27.96512794494629,
+     31.919246673583984,
+     42.34501647949219,
+     39.87503433227539,
+     36.65110397338867,
+     24.765281677246094,
+     18.263835906982422,
+     24.15574836730957,
+     17.225313186645508,
+     20.163124084472656,
+     25.160358428955078,
+     20.340469360351562,
+     24.908113479614258,
+     19.86027717590332,
+     53.98857879638672,
+     17.075408935546875,
+     33.44282913208008,
+     22.55679702758789,
+     31.692974090576172,
+     16.943523406982422,
+     28.045263290405273,
+     32.06417465209961,
+     17.08144187927246,
+     25.022689819335938,
+     25.369359970092773,
+     19.463436126708984,
+     25.2471981048584,
+     27.019546508789062
+    ]
+   },
+   "timing": {
+    "ms_per_image_end_to_end": 34.4,
+    "device": "cuda:0",
+    "note": "includes image decoding and resizing; see the export benchmark for model latency"
+   },
+   "config": {
+    "data": {
+     "root": "E:\\portfolio\\datasets\\MVTecAD",
+     "category": "hazelnut",
+     "image_size": [
+      256,
+      256
+     ],
+     "calib_ratio": 0.1,
+     "seed": 42,
+     "max_test_samples": 0
+    },
+    "model": {
+     "padim": {
+      "backbone": "resnet18",
+      "layers": [
+       "layer1",
+       "layer2",
+       "layer3"
+      ]
+     }
+    }
+   },
+   "environment": {
+    "python": "3.12.16",
+    "torch": "2.15.0+cu134",
+    "anomalib": "2.7.0",
+    "cpu": "Intel64 Family 6 Model 167 Stepping 1, GenuineIntel",
+    "cuda_device": "NVIDIA GeForce RTX 3060 Ti"
+   },
+   "fit_seconds": 14.1
+  },
+  "leather": {
+   "model": "padim",
+   "category": "leather",
+   "n_test": 124,
+   "n_calibration": 24,
+   "image": {
+    "auroc": 0.9989809782608695,
+    "ap": 0.9996455297350171,
+    "threshold": 26.863853454589844,
+    "tp": 92,
+    "fp": 2,
+    "fn": 0,
+    "tn": 30,
+    "precision": 0.9787234042553191,
+    "recall": 1.0,
+    "f1": 0.989247311827957,
+    "fpr": 0.0625,
+    "oracle_f1": 0.9945945945945946,
+    "oracle_threshold": 33.0504264831543
+   },
+   "pixel": {
+    "auroc": 0.9875390800606765,
+    "aupro": 0.9738795030539131,
+    "aupro_fpr_limit": 0.3,
+    "threshold": 26.863853454589844
+   },
+   "per_defect": {
+    "good": {
+     "n": 32,
+     "flagged": 2,
+     "rate": 0.0625,
+     "kind": "false_positive_rate"
+    },
+    "color": {
+     "n": 19,
+     "flagged": 19,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "cut": {
+     "n": 19,
+     "flagged": 19,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "fold": {
+     "n": 17,
+     "flagged": 17,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "glue": {
+     "n": 19,
+     "flagged": 19,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "poke": {
+     "n": 18,
+     "flagged": 18,
+     "rate": 1.0,
+     "kind": "recall"
+    }
+   },
+   "calibration": {
+    "max_fpr": 0.05,
+    "image_threshold": 26.863853454589844,
+    "pixel_threshold": 26.863853454589844,
+    "pixel_low": 9.613622665405273,
+    "image_scores": [
+     16.20576286315918,
+     21.593769073486328,
+     14.029277801513672,
+     21.81854248046875,
+     15.303328514099121,
+     14.863694190979004,
+     15.073686599731445,
+     26.863853454589844,
+     16.653717041015625,
+     14.091414451599121,
+     13.880846977233887,
+     24.352888107299805,
+     20.801441192626953,
+     15.979086875915527,
+     17.32246971130371,
+     15.667012214660645,
+     15.710685729980469,
+     32.39666748046875,
+     17.999649047851562,
+     17.654693603515625,
+     14.242814064025879,
+     15.713102340698242,
+     20.476093292236328,
+     14.841309547424316
+    ]
+   },
+   "timing": {
+    "ms_per_image_end_to_end": 33.9,
+    "device": "cuda:0",
+    "note": "includes image decoding and resizing; see the export benchmark for model latency"
+   },
+   "config": {
+    "data": {
+     "root": "E:\\portfolio\\datasets\\MVTecAD",
+     "category": "leather",
+     "image_size": [
+      256,
+      256
+     ],
+     "calib_ratio": 0.1,
+     "seed": 42,
+     "max_test_samples": 0
+    },
+    "model": {
+     "padim": {
+      "backbone": "resnet18",
+      "layers": [
+       "layer1",
+       "layer2",
+       "layer3"
+      ]
+     }
+    }
+   },
+   "environment": {
+    "python": "3.12.16",
+    "torch": "2.15.0+cu134",
+    "anomalib": "2.7.0",
+    "cpu": "Intel64 Family 6 Model 167 Stepping 1, GenuineIntel",
+    "cuda_device": "NVIDIA GeForce RTX 3060 Ti"
+   },
+   "fit_seconds": 9.2
+  },
+  "metal_nut": {
+   "model": "padim",
+   "category": "metal_nut",
+   "n_test": 115,
+   "n_calibration": 22,
+   "image": {
+    "auroc": 0.9208211143695014,
+    "ap": 0.9806138641759774,
+    "threshold": 33.06022644042969,
+    "tp": 85,
+    "fp": 5,
+    "fn": 8,
+    "tn": 17,
+    "precision": 0.9444444444444444,
+    "recall": 0.9139784946236559,
+    "f1": 0.9289617486338798,
+    "fpr": 0.22727272727272727,
+    "oracle_f1": 0.9347826086956522,
+    "oracle_threshold": 32.821861267089844
+   },
+   "pixel": {
+    "auroc": 0.9474605177547355,
+    "aupro": 0.8387978304321944,
+    "aupro_fpr_limit": 0.3,
+    "threshold": 33.06022644042969
+   },
+   "per_defect": {
+    "good": {
+     "n": 22,
+     "flagged": 5,
+     "rate": 0.22727272727272727,
+     "kind": "false_positive_rate"
+    },
+    "bent": {
+     "n": 25,
+     "flagged": 22,
+     "rate": 0.88,
+     "kind": "recall"
+    },
+    "color": {
+     "n": 22,
+     "flagged": 20,
+     "rate": 0.9090909090909091,
+     "kind": "recall"
+    },
+    "flip": {
+     "n": 23,
+     "flagged": 23,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "scratch": {
+     "n": 23,
+     "flagged": 20,
+     "rate": 0.8695652173913043,
+     "kind": "recall"
+    }
+   },
+   "calibration": {
+    "max_fpr": 0.05,
+    "image_threshold": 33.06022644042969,
+    "pixel_threshold": 33.06022644042969,
+    "pixel_low": 10.134053230285645,
+    "image_scores": [
+     29.913738250732422,
+     18.993276596069336,
+     30.472713470458984,
+     23.0188045501709,
+     23.01542854309082,
+     23.100749969482422,
+     22.944358825683594,
+     28.341110229492188,
+     20.313196182250977,
+     17.929943084716797,
+     22.812772750854492,
+     20.889493942260742,
+     20.91483497619629,
+     29.556577682495117,
+     21.614234924316406,
+     26.04754638671875,
+     31.897720336914062,
+     35.59111785888672,
+     20.84316635131836,
+     18.871055603027344,
+     23.473812103271484,
+     33.06022644042969
+    ]
+   },
+   "timing": {
+    "ms_per_image_end_to_end": 18.3,
+    "device": "cuda:0",
+    "note": "includes image decoding and resizing; see the export benchmark for model latency"
+   },
+   "config": {
+    "data": {
+     "root": "E:\\portfolio\\datasets\\MVTecAD",
+     "category": "metal_nut",
+     "image_size": [
+      256,
+      256
+     ],
+     "calib_ratio": 0.1,
+     "seed": 42,
+     "max_test_samples": 0
+    },
+    "model": {
+     "padim": {
+      "backbone": "resnet18",
+      "layers": [
+       "layer1",
+       "layer2",
+       "layer3"
+      ]
+     }
+    }
+   },
+   "environment": {
+    "python": "3.12.16",
+    "torch": "2.15.0+cu134",
+    "anomalib": "2.7.0",
+    "cpu": "Intel64 Family 6 Model 167 Stepping 1, GenuineIntel",
+    "cuda_device": "NVIDIA GeForce RTX 3060 Ti"
+   },
+   "fit_seconds": 6.3
+  },
+  "pill": {
+   "model": "padim",
+   "category": "pill",
+   "n_test": 167,
+   "n_calibration": 27,
+   "image": {
+    "auroc": 0.7951445717403165,
+    "ap": 0.9475737898414243,
+    "threshold": 49.395694732666016,
+    "tp": 34,
+    "fp": 1,
+    "fn": 107,
+    "tn": 25,
+    "precision": 0.9714285714285714,
+    "recall": 0.24113475177304963,
+    "f1": 0.3863636363636363,
+    "fpr": 0.038461538461538464,
+    "oracle_f1": 0.9463087248322147,
+    "oracle_threshold": 22.291996002197266
+   },
+   "pixel": {
+    "auroc": 0.9363469557413359,
+    "aupro": 0.9051516623872258,
+    "aupro_fpr_limit": 0.3,
+    "threshold": 49.395694732666016
+   },
+   "per_defect": {
+    "good": {
+     "n": 26,
+     "flagged": 1,
+     "rate": 0.038461538461538464,
+     "kind": "false_positive_rate"
+    },
+    "color": {
+     "n": 25,
+     "flagged": 5,
+     "rate": 0.2,
+     "kind": "recall"
+    },
+    "combined": {
+     "n": 17,
+     "flagged": 6,
+     "rate": 0.35294117647058826,
+     "kind": "recall"
+    },
+    "contamination": {
+     "n": 21,
+     "flagged": 7,
+     "rate": 0.3333333333333333,
+     "kind": "recall"
+    },
+    "crack": {
+     "n": 26,
+     "flagged": 5,
+     "rate": 0.19230769230769232,
+     "kind": "recall"
+    },
+    "faulty_imprint": {
+     "n": 19,
+     "flagged": 5,
+     "rate": 0.2631578947368421,
+     "kind": "recall"
+    },
+    "pill_type": {
+     "n": 9,
+     "flagged": 0,
+     "rate": 0.0,
+     "kind": "recall"
+    },
+    "scratch": {
+     "n": 24,
+     "flagged": 6,
+     "rate": 0.25,
+     "kind": "recall"
+    }
+   },
+   "calibration": {
+    "max_fpr": 0.05,
+    "image_threshold": 49.395694732666016,
+    "pixel_threshold": 49.395694732666016,
+    "pixel_low": 8.591894149780273,
+    "image_scores": [
+     21.26303482055664,
+     37.609371185302734,
+     26.786033630371094,
+     51.100921630859375,
+     25.541563034057617,
+     29.284339904785156,
+     22.131885528564453,
+     19.82512664794922,
+     22.993587493896484,
+     16.486513137817383,
+     49.395694732666016,
+     20.21036720275879,
+     26.960290908813477,
+     36.45281982421875,
+     20.489198684692383,
+     19.249767303466797,
+     31.266185760498047,
+     32.16865158081055,
+     18.412694931030273,
+     21.226806640625,
+     26.28767204284668,
+     27.949291229248047,
+     20.8804988861084,
+     22.26385498046875,
+     28.980281829833984,
+     14.486212730407715,
+     19.575153350830078
+    ]
+   },
+   "timing": {
+    "ms_per_image_end_to_end": 25.5,
+    "device": "cuda:0",
+    "note": "includes image decoding and resizing; see the export benchmark for model latency"
+   },
+   "config": {
+    "data": {
+     "root": "E:\\portfolio\\datasets\\MVTecAD",
+     "category": "pill",
+     "image_size": [
+      256,
+      256
+     ],
+     "calib_ratio": 0.1,
+     "seed": 42,
+     "max_test_samples": 0
+    },
+    "model": {
+     "padim": {
+      "backbone": "resnet18",
+      "layers": [
+       "layer1",
+       "layer2",
+       "layer3"
+      ]
+     }
+    }
+   },
+   "environment": {
+    "python": "3.12.16",
+    "torch": "2.15.0+cu134",
+    "anomalib": "2.7.0",
+    "cpu": "Intel64 Family 6 Model 167 Stepping 1, GenuineIntel",
+    "cuda_device": "NVIDIA GeForce RTX 3060 Ti"
+   },
+   "fit_seconds": 8.0
+  },
+  "screw": {
+   "model": "padim",
+   "category": "screw",
+   "n_test": 160,
+   "n_calibration": 32,
+   "image": {
+    "auroc": 0.7858167657306826,
+    "ap": 0.897064058577278,
+    "threshold": 44.31560516357422,
+    "tp": 32,
+    "fp": 3,
+    "fn": 87,
+    "tn": 38,
+    "precision": 0.9142857142857143,
+    "recall": 0.2689075630252101,
+    "f1": 0.41558441558441556,
+    "fpr": 0.07317073170731707,
+    "oracle_f1": 0.8679245283018869,
+    "oracle_threshold": 26.569839477539062
+   },
+   "pixel": {
+    "auroc": 0.9788193172313691,
+    "aupro": 0.9057191049799032,
+    "aupro_fpr_limit": 0.3,
+    "threshold": 44.31560516357422
+   },
+   "per_defect": {
+    "good": {
+     "n": 41,
+     "flagged": 3,
+     "rate": 0.07317073170731707,
+     "kind": "false_positive_rate"
+    },
+    "manipulated_front": {
+     "n": 24,
+     "flagged": 12,
+     "rate": 0.5,
+     "kind": "recall"
+    },
+    "scratch_head": {
+     "n": 24,
+     "flagged": 4,
+     "rate": 0.16666666666666666,
+     "kind": "recall"
+    },
+    "scratch_neck": {
+     "n": 25,
+     "flagged": 6,
+     "rate": 0.24,
+     "kind": "recall"
+    },
+    "thread_side": {
+     "n": 23,
+     "flagged": 6,
+     "rate": 0.2608695652173913,
+     "kind": "recall"
+    },
+    "thread_top": {
+     "n": 23,
+     "flagged": 4,
+     "rate": 0.17391304347826086,
+     "kind": "recall"
+    }
+   },
+   "calibration": {
+    "max_fpr": 0.05,
+    "image_threshold": 44.31560516357422,
+    "pixel_threshold": 44.31560516357422,
+    "pixel_low": 9.0640869140625,
+    "image_scores": [
+     41.024452209472656,
+     40.96842956542969,
+     20.78180503845215,
+     29.333492279052734,
+     45.60910415649414,
+     17.060346603393555,
+     36.19355773925781,
+     23.800321578979492,
+     28.49342918395996,
+     28.181964874267578,
+     28.69088363647461,
+     42.03184509277344,
+     27.451391220092773,
+     25.090835571289062,
+     34.14674758911133,
+     28.891050338745117,
+     38.75052261352539,
+     32.32338333129883,
+     44.31560516357422,
+     35.57484436035156,
+     35.36173629760742,
+     21.65976333618164,
+     36.45047378540039,
+     26.091567993164062,
+     21.57180404663086,
+     26.747835159301758,
+     31.144275665283203,
+     23.54676628112793,
+     33.58074188232422,
+     36.44793701171875,
+     25.709272384643555,
+     28.1302433013916
+    ]
+   },
+   "timing": {
+    "ms_per_image_end_to_end": 19.8,
+    "device": "cuda:0",
+    "note": "includes image decoding and resizing; see the export benchmark for model latency"
+   },
+   "config": {
+    "data": {
+     "root": "E:\\portfolio\\datasets\\MVTecAD",
+     "category": "screw",
+     "image_size": [
+      256,
+      256
+     ],
+     "calib_ratio": 0.1,
+     "seed": 42,
+     "max_test_samples": 0
+    },
+    "model": {
+     "padim": {
+      "backbone": "resnet18",
+      "layers": [
+       "layer1",
+       "layer2",
+       "layer3"
+      ]
+     }
+    }
+   },
+   "environment": {
+    "python": "3.12.16",
+    "torch": "2.15.0+cu134",
+    "anomalib": "2.7.0",
+    "cpu": "Intel64 Family 6 Model 167 Stepping 1, GenuineIntel",
+    "cuda_device": "NVIDIA GeForce RTX 3060 Ti"
+   },
+   "fit_seconds": 8.1
+  },
+  "tile": {
+   "model": "padim",
+   "category": "tile",
+   "n_test": 117,
+   "n_calibration": 23,
+   "image": {
+    "auroc": 0.9653679653679654,
+    "ap": 0.9883003455465507,
+    "threshold": 46.65522384643555,
+    "tp": 65,
+    "fp": 0,
+    "fn": 19,
+    "tn": 33,
+    "precision": 1.0,
+    "recall": 0.7738095238095238,
+    "f1": 0.8724832214765101,
+    "fpr": 0.0,
+    "oracle_f1": 0.951219512195122,
+    "oracle_threshold": 31.58281707763672
+   },
+   "pixel": {
+    "auroc": 0.9117914785986898,
+    "aupro": 0.7696688960570477,
+    "aupro_fpr_limit": 0.3,
+    "threshold": 46.65522384643555
+   },
+   "per_defect": {
+    "good": {
+     "n": 33,
+     "flagged": 0,
+     "rate": 0.0,
+     "kind": "false_positive_rate"
+    },
+    "crack": {
+     "n": 17,
+     "flagged": 16,
+     "rate": 0.9411764705882353,
+     "kind": "recall"
+    },
+    "glue_strip": {
+     "n": 18,
+     "flagged": 18,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "gray_stroke": {
+     "n": 16,
+     "flagged": 10,
+     "rate": 0.625,
+     "kind": "recall"
+    },
+    "oil": {
+     "n": 18,
+     "flagged": 18,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "rough": {
+     "n": 15,
+     "flagged": 3,
+     "rate": 0.2,
+     "kind": "recall"
+    }
+   },
+   "calibration": {
+    "max_fpr": 0.05,
+    "image_threshold": 46.65522384643555,
+    "pixel_threshold": 46.65522384643555,
+    "pixel_low": 10.664036750793457,
+    "image_scores": [
+     37.470706939697266,
+     25.451065063476562,
+     19.867393493652344,
+     24.76125144958496,
+     28.26525115966797,
+     24.174711227416992,
+     20.487762451171875,
+     28.254858016967773,
+     21.407712936401367,
+     25.206384658813477,
+     34.754638671875,
+     19.782756805419922,
+     39.47547149658203,
+     28.371490478515625,
+     32.14634704589844,
+     30.906505584716797,
+     39.03533935546875,
+     21.97345542907715,
+     46.65522384643555,
+     47.058841705322266,
+     22.834009170532227,
+     20.495922088623047,
+     17.94644546508789
+    ]
+   },
+   "timing": {
+    "ms_per_image_end_to_end": 28.7,
+    "device": "cuda:0",
+    "note": "includes image decoding and resizing; see the export benchmark for model latency"
+   },
+   "config": {
+    "data": {
+     "root": "E:\\portfolio\\datasets\\MVTecAD",
+     "category": "tile",
+     "image_size": [
+      256,
+      256
+     ],
+     "calib_ratio": 0.1,
+     "seed": 42,
+     "max_test_samples": 0
+    },
+    "model": {
+     "padim": {
+      "backbone": "resnet18",
+      "layers": [
+       "layer1",
+       "layer2",
+       "layer3"
+      ]
+     }
+    }
+   },
+   "environment": {
+    "python": "3.12.16",
+    "torch": "2.15.0+cu134",
+    "anomalib": "2.7.0",
+    "cpu": "Intel64 Family 6 Model 167 Stepping 1, GenuineIntel",
+    "cuda_device": "NVIDIA GeForce RTX 3060 Ti"
+   },
+   "fit_seconds": 8.2
+  },
+  "toothbrush": {
+   "model": "padim",
+   "category": "toothbrush",
+   "n_test": 42,
+   "n_calibration": 6,
+   "image": {
+    "auroc": 0.8111111111111111,
+    "ap": 0.8978519455086195,
+    "threshold": 39.26717758178711,
+    "tp": 30,
+    "fp": 6,
+    "fn": 0,
+    "tn": 6,
+    "precision": 0.8333333333333334,
+    "recall": 1.0,
+    "f1": 0.9090909090909091,
+    "fpr": 0.5,
+    "oracle_f1": 0.9090909090909091,
+    "oracle_threshold": 39.62054443359375
+   },
+   "pixel": {
+    "auroc": 0.9841672372040214,
+    "aupro": 0.8938331205991203,
+    "aupro_fpr_limit": 0.3,
+    "threshold": 39.26717758178711
+   },
+   "per_defect": {
+    "good": {
+     "n": 12,
+     "flagged": 6,
+     "rate": 0.5,
+     "kind": "false_positive_rate"
+    },
+    "defective": {
+     "n": 30,
+     "flagged": 30,
+     "rate": 1.0,
+     "kind": "recall"
+    }
+   },
+   "calibration": {
+    "max_fpr": 0.05,
+    "image_threshold": 39.26717758178711,
+    "pixel_threshold": 39.26717758178711,
+    "pixel_low": 10.320324897766113,
+    "image_scores": [
+     26.374879837036133,
+     39.26717758178711,
+     32.111793518066406,
+     38.33468246459961,
+     23.898731231689453,
+     38.167964935302734
+    ]
+   },
+   "timing": {
+    "ms_per_image_end_to_end": 36.4,
+    "device": "cuda:0",
+    "note": "includes image decoding and resizing; see the export benchmark for model latency"
+   },
+   "config": {
+    "data": {
+     "root": "E:\\portfolio\\datasets\\MVTecAD",
+     "category": "toothbrush",
+     "image_size": [
+      256,
+      256
+     ],
+     "calib_ratio": 0.1,
+     "seed": 42,
+     "max_test_samples": 0
+    },
+    "model": {
+     "padim": {
+      "backbone": "resnet18",
+      "layers": [
+       "layer1",
+       "layer2",
+       "layer3"
+      ]
+     }
+    }
+   },
+   "environment": {
+    "python": "3.12.16",
+    "torch": "2.15.0+cu134",
+    "anomalib": "2.7.0",
+    "cpu": "Intel64 Family 6 Model 167 Stepping 1, GenuineIntel",
+    "cuda_device": "NVIDIA GeForce RTX 3060 Ti"
+   },
+   "fit_seconds": 5.2
+  },
+  "transistor": {
+   "model": "padim",
+   "category": "transistor",
+   "n_test": 100,
+   "n_calibration": 21,
+   "image": {
+    "auroc": 0.9345833333333333,
+    "ap": 0.9185699134109537,
+    "threshold": 49.20548629760742,
+    "tp": 29,
+    "fp": 3,
+    "fn": 11,
+    "tn": 57,
+    "precision": 0.90625,
+    "recall": 0.725,
+    "f1": 0.8055555555555555,
+    "fpr": 0.05,
+    "oracle_f1": 0.8607594936708861,
+    "oracle_threshold": 44.35566711425781
+   },
+   "pixel": {
+    "auroc": 0.9727939786612865,
+    "aupro": 0.8833739720239069,
+    "aupro_fpr_limit": 0.3,
+    "threshold": 49.20548629760742
+   },
+   "per_defect": {
+    "good": {
+     "n": 60,
+     "flagged": 3,
+     "rate": 0.05,
+     "kind": "false_positive_rate"
+    },
+    "bent_lead": {
+     "n": 10,
+     "flagged": 9,
+     "rate": 0.9,
+     "kind": "recall"
+    },
+    "cut_lead": {
+     "n": 10,
+     "flagged": 5,
+     "rate": 0.5,
+     "kind": "recall"
+    },
+    "damaged_case": {
+     "n": 10,
+     "flagged": 5,
+     "rate": 0.5,
+     "kind": "recall"
+    },
+    "misplaced": {
+     "n": 10,
+     "flagged": 10,
+     "rate": 1.0,
+     "kind": "recall"
+    }
+   },
+   "calibration": {
+    "max_fpr": 0.05,
+    "image_threshold": 49.20548629760742,
+    "pixel_threshold": 49.20548629760742,
+    "pixel_low": 10.515186309814453,
+    "image_scores": [
+     20.55482292175293,
+     40.092838287353516,
+     19.590316772460938,
+     33.0340576171875,
+     29.507104873657227,
+     31.881805419921875,
+     26.869102478027344,
+     32.851436614990234,
+     26.740942001342773,
+     55.770416259765625,
+     31.27300453186035,
+     33.986289978027344,
+     41.08061218261719,
+     41.07442092895508,
+     28.47556495666504,
+     28.412517547607422,
+     33.48816680908203,
+     41.891014099121094,
+     49.20548629760742,
+     36.00728225708008,
+     18.20121955871582
+    ]
+   },
+   "timing": {
+    "ms_per_image_end_to_end": 37.7,
+    "device": "cuda:0",
+    "note": "includes image decoding and resizing; see the export benchmark for model latency"
+   },
+   "config": {
+    "data": {
+     "root": "E:\\portfolio\\datasets\\MVTecAD",
+     "category": "transistor",
+     "image_size": [
+      256,
+      256
+     ],
+     "calib_ratio": 0.1,
+     "seed": 42,
+     "max_test_samples": 0
+    },
+    "model": {
+     "padim": {
+      "backbone": "resnet18",
+      "layers": [
+       "layer1",
+       "layer2",
+       "layer3"
+      ]
+     }
+    }
+   },
+   "environment": {
+    "python": "3.12.16",
+    "torch": "2.15.0+cu134",
+    "anomalib": "2.7.0",
+    "cpu": "Intel64 Family 6 Model 167 Stepping 1, GenuineIntel",
+    "cuda_device": "NVIDIA GeForce RTX 3060 Ti"
+   },
+   "fit_seconds": 9.6
+  },
+  "wood": {
+   "model": "padim",
+   "category": "wood",
+   "n_test": 79,
+   "n_calibration": 25,
+   "image": {
+    "auroc": 0.9657894736842105,
+    "ap": 0.9897218863245946,
+    "threshold": 34.25251007080078,
+    "tp": 57,
+    "fp": 5,
+    "fn": 3,
+    "tn": 14,
+    "precision": 0.9193548387096774,
+    "recall": 0.95,
+    "f1": 0.9344262295081968,
+    "fpr": 0.2631578947368421,
+    "oracle_f1": 0.9401709401709402,
+    "oracle_threshold": 45.97417068481445
+   },
+   "pixel": {
+    "auroc": 0.9220075528143132,
+    "aupro": 0.866178684119809,
+    "aupro_fpr_limit": 0.3,
+    "threshold": 34.25251007080078
+   },
+   "per_defect": {
+    "good": {
+     "n": 19,
+     "flagged": 5,
+     "rate": 0.2631578947368421,
+     "kind": "false_positive_rate"
+    },
+    "color": {
+     "n": 8,
+     "flagged": 8,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "combined": {
+     "n": 11,
+     "flagged": 11,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "hole": {
+     "n": 10,
+     "flagged": 9,
+     "rate": 0.9,
+     "kind": "recall"
+    },
+    "liquid": {
+     "n": 10,
+     "flagged": 10,
+     "rate": 1.0,
+     "kind": "recall"
+    },
+    "scratch": {
+     "n": 21,
+     "flagged": 19,
+     "rate": 0.9047619047619048,
+     "kind": "recall"
+    }
+   },
+   "calibration": {
+    "max_fpr": 0.05,
+    "image_threshold": 34.25251007080078,
+    "pixel_threshold": 34.25251007080078,
+    "pixel_low": 9.39007568359375,
+    "image_scores": [
+     20.002161026000977,
+     44.37199401855469,
+     21.94840431213379,
+     20.552631378173828,
+     32.75267028808594,
+     32.14470672607422,
+     19.799161911010742,
+     18.89708709716797,
+     19.522233963012695,
+     18.24573516845703,
+     31.37971305847168,
+     27.925939559936523,
+     19.621763229370117,
+     16.654916763305664,
+     16.947134017944336,
+     18.66167640686035,
+     16.264869689941406,
+     18.39637565612793,
+     22.48724937438965,
+     17.229045867919922,
+     17.97713279724121,
+     17.230022430419922,
+     34.25251007080078,
+     15.60494327545166,
+     15.155566215515137
+    ]
+   },
+   "timing": {
+    "ms_per_image_end_to_end": 38.8,
+    "device": "cuda:0",
+    "note": "includes image decoding and resizing; see the export benchmark for model latency"
+   },
+   "config": {
+    "data": {
+     "root": "E:\\portfolio\\datasets\\MVTecAD",
+     "category": "wood",
+     "image_size": [
+      256,
+      256
+     ],
+     "calib_ratio": 0.1,
+     "seed": 42,
+     "max_test_samples": 0
+    },
+    "model": {
+     "padim": {
+      "backbone": "resnet18",
+      "layers": [
+       "layer1",
+       "layer2",
+       "layer3"
+      ]
+     }
+    }
+   },
+   "environment": {
+    "python": "3.12.16",
+    "torch": "2.15.0+cu134",
+    "anomalib": "2.7.0",
+    "cpu": "Intel64 Family 6 Model 167 Stepping 1, GenuineIntel",
+    "cuda_device": "NVIDIA GeForce RTX 3060 Ti"
+   },
+   "fit_seconds": 10.9
+  },
+  "zipper": {
+   "model": "padim",
+   "category": "zipper",
+   "n_test": 151,
+   "n_calibration": 24,
+   "image": {
+    "auroc": 0.7371323529411764,
+    "ap": 0.9126426410676867,
+    "threshold": 49.12556838989258,
+    "tp": 42,
+    "fp": 3,
+    "fn": 77,
+    "tn": 29,
+    "precision": 0.9333333333333333,
+    "recall": 0.35294117647058826,
+    "f1": 0.5121951219512195,
+    "fpr": 0.09375,
+    "oracle_f1": 0.900763358778626,
+    "oracle_threshold": 19.973108291625977
+   },
+   "pixel": {
+    "auroc": 0.9712840897692122,
+    "aupro": 0.9082478695339212,
+    "aupro_fpr_limit": 0.3,
+    "threshold": 49.12556838989258
+   },
+   "per_defect": {
+    "good": {
+     "n": 32,
+     "flagged": 3,
+     "rate": 0.09375,
+     "kind": "false_positive_rate"
+    },
+    "broken_teeth": {
+     "n": 19,
+     "flagged": 6,
+     "rate": 0.3157894736842105,
+     "kind": "recall"
+    },
+    "combined": {
+     "n": 16,
+     "flagged": 10,
+     "rate": 0.625,
+     "kind": "recall"
+    },
+    "fabric_border": {
+     "n": 17,
+     "flagged": 16,
+     "rate": 0.9411764705882353,
+     "kind": "recall"
+    },
+    "fabric_interior": {
+     "n": 16,
+     "flagged": 1,
+     "rate": 0.0625,
+     "kind": "recall"
+    },
+    "rough": {
+     "n": 17,
+     "flagged": 3,
+     "rate": 0.17647058823529413,
+     "kind": "recall"
+    },
+    "split_teeth": {
+     "n": 18,
+     "flagged": 2,
+     "rate": 0.1111111111111111,
+     "kind": "recall"
+    },
+    "squeezed_teeth": {
+     "n": 16,
+     "flagged": 4,
+     "rate": 0.25,
+     "kind": "recall"
+    }
+   },
+   "calibration": {
+    "max_fpr": 0.05,
+    "image_threshold": 49.12556838989258,
+    "pixel_threshold": 49.12556838989258,
+    "pixel_low": 8.735867500305176,
+    "image_scores": [
+     14.756486892700195,
+     29.769041061401367,
+     17.491268157958984,
+     37.81929397583008,
+     30.580581665039062,
+     34.75161361694336,
+     12.469511032104492,
+     14.238385200500488,
+     13.394889831542969,
+     17.019472122192383,
+     63.695064544677734,
+     25.602724075317383,
+     13.413196563720703,
+     24.475482940673828,
+     36.68088150024414,
+     49.12556838989258,
+     28.31415557861328,
+     34.362430572509766,
+     20.25792694091797,
+     18.066322326660156,
+     32.37715148925781,
+     15.978708267211914,
+     15.055950164794922,
+     38.51549530029297
+    ]
+   },
+   "timing": {
+    "ms_per_image_end_to_end": 18.7,
+    "device": "cuda:0",
+    "note": "includes image decoding and resizing; see the export benchmark for model latency"
+   },
+   "config": {
+    "data": {
+     "root": "E:\\portfolio\\datasets\\MVTecAD",
+     "category": "zipper",
+     "image_size": [
+      256,
+      256
+     ],
+     "calib_ratio": 0.1,
+     "seed": 42,
+     "max_test_samples": 0
+    },
+    "model": {
+     "padim": {
+      "backbone": "resnet18",
+      "layers": [
+       "layer1",
+       "layer2",
+       "layer3"
+      ]
+     }
+    }
+   },
+   "environment": {
+    "python": "3.12.16",
+    "torch": "2.15.0+cu134",
+    "anomalib": "2.7.0",
+    "cpu": "Intel64 Family 6 Model 167 Stepping 1, GenuineIntel",
+    "cuda_device": "NVIDIA GeForce RTX 3060 Ti"
+   },
+   "fit_seconds": 6.9
+  }
+ }
+}

@@ -1,4 +1,4 @@
-"""Plots: per-image panels, score histograms, ROC / PR curves, latency vs accuracy."""
+"""Plots: per-image panels, score histograms, ROC / PR curves, calibration overview, latency vs accuracy."""
 
 from __future__ import annotations
 
@@ -146,4 +146,68 @@ def save_curves(path: Path, labels: Sequence[int], scores: Sequence[float], titl
     fig.suptitle(title, fontsize=10)
     fig.tight_layout()
     fig.savefig(path, dpi=120)
+    plt.close(fig)
+
+
+CALIBRATION_GROUPS = (
+    ("calibration", "held-out train normals (calibration)", TEXT_LIGHT, 0.27),
+    ("normal", "test normals", "#2a78d6", 0.0),
+    ("defective", "test defects", "#eb6834", -0.27),
+)
+
+
+def save_calibration_overview(path: Path, rows: Sequence[dict[str, Any]], title: str) -> None:
+    """One row per category: calibration normals, test normals and test defects, as score / threshold.
+
+    Dividing by the calibrated threshold puts every category on the same axis, with the threshold at 1.
+    Each row needs `category`, `threshold`, `calibration`, `normal` and `defective` (lists of scores).
+    """
+    rng = np.random.default_rng(0)
+    ratios = {k: [np.asarray(r[k], dtype=np.float64) / r["threshold"] for r in rows] for k, *_ in CALIBRATION_GROUPS}
+    values = np.concatenate([x for xs in ratios.values() for x in xs])
+    lo, hi = values.min() / 1.08, values.max() * 1.08
+    ticks = [t for t in (0.25, 0.5, 0.75, 1, 1.5, 2, 3, 4, 6) if lo <= t <= hi]
+    n = len(rows)
+    height = 0.48 * n + 1.2
+    fig, ax = plt.subplots(figsize=(8, height), facecolor=BACKGROUND)
+    ax.set_facecolor(BACKGROUND)
+    for i in range(n):
+        y0 = n - 1 - i
+        if i:
+            ax.axhline(y0 + 0.5, color=GRID, linewidth=0.6, zorder=0)
+        for key, _, color, dy in CALIBRATION_GROUPS:
+            x = ratios[key][i]
+            ax.scatter(x, y0 + dy + rng.uniform(-0.07, 0.07, x.size), s=9, color=color, linewidths=0, zorder=3)
+        fp = int((ratios["normal"][i] > 1).sum())
+        fn = int((ratios["defective"][i] <= 1).sum())
+        ax.annotate(
+            f"false alarms {fp}/{ratios['normal'][i].size}, missed {fn}/{ratios['defective'][i].size}",
+            (1.01, y0),
+            xycoords=("axes fraction", "data"),
+            va="center",
+            fontsize=7,
+            color=TEXT_LIGHT,
+        )
+    ax.axvline(1.0, color=TEXT, linestyle="--", linewidth=1, zorder=2)
+    ax.set_xscale("log")
+    ax.set_xlim(lo, hi)
+    ax.xaxis.set_major_locator(FixedLocator(ticks))
+    ax.xaxis.set_major_formatter(FuncFormatter(lambda v, _: f"{v:g}"))
+    ax.xaxis.set_minor_formatter(NullFormatter())
+    ax.set_ylim(-0.5, n - 0.5)
+    ax.set_yticks(range(n), [r["category"] for r in reversed(rows)])
+    ax.set_xlabel("image score / calibrated threshold (log scale, threshold = 1)", color=TEXT, fontsize=9)
+    ax.grid(True, axis="x", color=GRID, linewidth=0.6, zorder=0)
+    ax.tick_params(colors=TEXT_LIGHT, labelsize=8)
+    ax.tick_params(axis="y", length=0, labelcolor=TEXT)
+    for spine in ax.spines.values():
+        spine.set_color(GRID)
+    handles = [Line2D([], [], marker="o", ls="", color=c, label=label) for _, label, c, _ in CALIBRATION_GROUPS]
+    handles.append(Line2D([], [], ls="--", color=TEXT, label="calibrated threshold"))
+    fig.legend(
+        handles=handles, loc="lower center", bbox_to_anchor=(0.5, 0), ncol=len(handles), frameon=False, fontsize=8
+    )
+    ax.set_title(title, color=TEXT, fontsize=10)
+    fig.tight_layout(rect=(0, 0.3 / height, 0.83, 1))
+    fig.savefig(path, dpi=130, facecolor=BACKGROUND)
     plt.close(fig)

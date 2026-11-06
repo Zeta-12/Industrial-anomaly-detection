@@ -26,6 +26,15 @@ def test_save_panel_and_summary_figures(tmp_path):
     assert all((tmp_path / n).stat().st_size > 0 for n in ("p.png", "d.png", "c.png"))
 
 
+def test_calibration_overview_figure(tmp_path):
+    rows = [
+        {"category": "a", "threshold": 2.0, "calibration": [1.0, 2.0], "normal": [1.2, 2.5], "defective": [1.8, 6.0]},
+        {"category": "b", "threshold": 10.0, "calibration": [8.0, 9.0], "normal": [7.0], "defective": [30.0]},
+    ]
+    viz.save_calibration_overview(tmp_path / "o.png", rows, "t")
+    assert (tmp_path / "o.png").stat().st_size > 0
+
+
 def test_deep_merge_keeps_unspecified_defaults():
     merged = deep_merge(DEFAULTS, {"data": {"category": "screw"}})
     assert merged["data"]["category"] == "screw"

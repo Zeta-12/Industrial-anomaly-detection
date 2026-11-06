@@ -14,8 +14,74 @@ localisation is measured at pixel level.
 
 ## Results
 
-PatchCore (WideResNet-50-2, `layer2` + `layer3`, 10 % coreset) on the MVTec AD **pill** category, full test set
-(26 good / 141 defective images), CPU only. The other 14 categories are in progress (see [Roadmap](#roadmap)).
+### MVTec AD, 15 categories
+
+PatchCore (WideResNet-50-2, `layer2` + `layer3`, 10 % coreset) and PaDiM (ResNet-18, the anomalib default,
+`layer1` to `layer3`), 256x256 input, full test sets (467 good / 1258 defective images). In each category 10 % of
+`train/good` is held out to calibrate the threshold (target: 5 % false alarms) and the rest is used for fitting.
+Fitted on an RTX 3060 Ti: 16 min for the 15 categories with PatchCore, 2 min with PaDiM.
+
+Each cell is PatchCore / PaDiM.
+
+| Category | Image AUROC | Pixel AUROC | AUPRO@0.3 | Recall @cal. | FPR @cal. |
+|---|---|---|---|---|---|
+| bottle | 1.000 / 0.998 | 0.985 / 0.981 | 0.939 / 0.930 | 1.000 / 1.000 | 0.000 / 0.100 |
+| cable | 0.986 / 0.854 | 0.984 / 0.965 | 0.928 / 0.873 | 0.978 / 0.772 | 0.086 / 0.224 |
+| capsule | 0.990 / 0.890 | 0.990 / 0.981 | 0.924 / 0.893 | 0.982 / 0.193 | 0.174 / 0.000 |
+| carpet | 0.986 / 0.986 | 0.991 / 0.988 | 0.938 / 0.949 | 0.989 / 0.933 | 0.393 / 0.036 |
+| grid | 0.990 / 0.840 | 0.983 / 0.930 | 0.910 / 0.810 | 0.982 / 0.509 | 0.190 / 0.143 |
+| hazelnut | 1.000 / 0.617 | 0.988 / 0.969 | 0.890 / 0.827 | 1.000 / 0.386 | 0.000 / 0.325 |
+| leather | 1.000 / 0.999 | 0.992 / 0.988 | 0.973 / 0.974 | 1.000 / 1.000 | 0.531 / 0.062 |
+| metal_nut | 0.997 / 0.921 | 0.987 / 0.947 | 0.935 / 0.839 | 0.989 / 0.914 | 0.045 / 0.227 |
+| pill | 0.947 / 0.795 | 0.980 / 0.936 | 0.941 / 0.905 | 0.894 / 0.241 | 0.115 / 0.038 |
+| screw | 0.975 / 0.786 | 0.989 / 0.979 | 0.942 / 0.906 | 0.899 / 0.269 | 0.098 / 0.073 |
+| tile | 1.000 / 0.965 | 0.955 / 0.912 | 0.860 / 0.770 | 1.000 / 0.774 | 0.061 / 0.000 |
+| toothbrush | 0.914 / 0.811 | 0.989 / 0.984 | 0.883 / 0.894 | 1.000 / 1.000 | 0.250 / 0.500 |
+| transistor | 0.993 / 0.935 | 0.972 / 0.973 | 0.944 / 0.883 | 0.925 / 0.725 | 0.033 / 0.050 |
+| wood | 0.988 / 0.966 | 0.931 / 0.922 | 0.885 / 0.866 | 1.000 / 0.950 | 0.526 / 0.263 |
+| zipper | 0.978 / 0.737 | 0.981 / 0.971 | 0.933 / 0.908 | 0.992 / 0.353 | 0.219 / 0.094 |
+| **mean** | 0.983 / 0.873 | 0.980 / 0.962 | 0.922 / 0.882 | 0.975 / 0.668 | 0.181 / 0.142 |
+
+Full tables with image AP and oracle F1: [`mvtec_patchcore.md`](docs/assets/mvtec_patchcore.md),
+[`mvtec_padim.md`](docs/assets/mvtec_padim.md). All 30 `metrics.json`, with the calibration scores:
+[`mvtec_metrics.json`](docs/assets/mvtec_metrics.json).
+
+1. **PatchCore is much better on objects, PaDiM is close on textures.** Mean image AUROC is 0.983 against 0.873. On
+   the 5 textures the gap is small (0.993 vs 0.951), on the 10 objects it is large (0.978 vs 0.834), and the worst
+   case is hazelnut (1.000 vs 0.617). PaDiM fits one Gaussian per patch position, so it expects the parts to be
+   aligned, and hazelnut and screw are photographed at random orientations. PatchCore compares each patch with the
+   whole memory bank, wherever the patch is. This is not a same-backbone comparison: PaDiM uses a ResNet-18 here, and
+   it fits 7x faster.
+2. **A high AUROC does not give a usable threshold.** At the calibrated threshold PatchCore raises 73 false alarms
+   on 467 good test images (15.6 %, for a 5 % target). On leather it flags 17 of the 32 good images, with an image
+   AUROC of 1.000. The calibration itself works: on the calibration images, every category gets 1 false alarm out of
+   21 to 39 (0 out of 6 for toothbrush), which is at most 5 %. The problem is that the held-out train normals and
+   the test normals don't have the same score distribution. In the figure below every score is divided by the
+   threshold. On leather, wood and carpet the test normals (blue) sit to the right of the calibration normals
+   (grey). Measured as an AUROC between the two groups (0.5 = same distribution), the shift is 0.875 on leather,
+   0.790 on carpet, 0.773 on wood and 0.704 on zipper. It stays around 0.5 on bottle, cable, hazelnut and tile,
+   which stay between 0 and 9 % false alarms. The PatchCore threshold also has very little margin: on average it is
+   only 1.12x the median calibration score. I can't tell from these numbers whether the shift comes from different
+   acquisition conditions between the train and test folders or from near-duplicates inside `train/good`. Either
+   way, a threshold calibrated on images from the training pool is optimistic.
+3. **With a few dozen calibration images, one or two outliers can set the threshold.** PaDiM only detects 760 of
+   the 1258 defects (60 %) at its calibrated threshold, against 0.918 oracle F1. On capsule, the two highest
+   calibration scores are 3.2x the median (76.6 against 24.0). One of them looks like any other capsule to me, and
+   PatchCore ranks it 11th of 22. The threshold ends up above most of the defects: 88 of 109 are missed, for an
+   image AUROC of 0.890. Neither problem shows up in AUROC or in the oracle F1. On a real line I would calibrate on
+   a larger set of recent production images and keep monitoring the false alarm rate after deployment.
+
+<p>
+<img src="docs/assets/mvtec_patchcore_calibration.png" width="49%" alt="PatchCore: calibration normals, test normals and test defects for the 15 categories, as score divided by the calibrated threshold">
+<img src="docs/assets/mvtec_padim_calibration.png" width="49%" alt="PaDiM: calibration normals, test normals and test defects for the 15 categories, as score divided by the calibrated threshold">
+</p>
+
+### Pill in detail
+
+The rest of the results use the pill category, fitted on the laptop CPU (Intel Core Ultra 5 235U), full test set
+(26 good / 141 defective images). The GPU fit of the same category gives 0.947 image AUROC instead of 0.949 and 15
+missed defects instead of 13: CPU and GPU floating point results are not bit-identical, so the coreset and the
+scores differ slightly.
 
 | Category | Image AUROC | Image AP | Pixel AUROC | AUPRO@0.3 | Recall @cal. | FPR @cal. | Oracle F1* |
 |---|---|---|---|---|---|---|---|
@@ -41,7 +107,7 @@ F1 is 0.941 against 0.950 for the oracle, and this gap is exactly what tuning on
 
 <img src="docs/assets/pill_score_distribution.png" width="560" alt="Score distribution of normal and defective pills with the calibrated threshold">
 
-### Error analysis
+#### Error analysis
 
 | | |
 |---|---|
@@ -51,7 +117,8 @@ F1 is 0.941 against 0.950 for the oracle, and this gap is exactly what tuning on
 | ![Background spot](docs/assets/pill_crack_background_spot.png) | The crack is detected, but there is a second hot spot on the black background. Masking the background (segmenting the pill first) would remove this kind of false alarm. |
 
 Compute (Intel Core Ultra 5 235U, CPU only): fitting takes 24 min, almost all of it in the coreset subsampling.
-Scoring takes 0.55 s per image end to end, mostly in the nearest neighbour search.
+Scoring takes 0.55 s per image end to end, mostly in the nearest neighbour search. On the RTX 3060 Ti the same fit
+takes 71 s and scoring 32 ms per image.
 
 ## Edge deployment: CPU, iGPU and NPU
 
@@ -181,21 +248,31 @@ git clone https://github.com/Zeta-12/industrial-anomaly-detection.git
 cd industrial-anomaly-detection
 uv sync                     # CPU wheels
 
-uv run iad download         # MVTec AD, 4.9 GB, CC BY-NC-SA 4.0 (non-commercial)
+uv run iad download         # MVTec AD, 4.9 GB, CC BY-NC-SA 4.0 (non-commercial), into datasets/MVTecAD
 uv run iad run --category pill                 # fit + calibrate + evaluate one category
 uv run iad run --category all --model padim    # all categories, other model
-uv run iad summary --model patchcore           # markdown table of the evaluated categories
+uv run iad summary --model patchcore           # markdown table and calibration figure of the evaluated categories
+```
+
+On an NVIDIA GPU, replace the CPU wheels with the CUDA build that matches your driver, then use `--no-sync` so uv
+does not put the CPU wheels back:
+
+```bash
+uv pip install --reinstall torch torchvision --index-url https://download.pytorch.org/whl/cu134
+uv run --no-sync iad run --category all --device cuda
 ```
 
 Each run writes to `runs/<model>/<category>/`:
 
 | File | Content |
 |---|---|
-| `metrics.json` | all metrics, thresholds, timings, library versions and the config used |
+| `metrics.json` | all metrics, thresholds, calibration scores, timings, library versions and the config used |
 | `scores.csv` | score and decision for each image |
 | `score_distribution.png`, `curves.png` | score histograms with the threshold, ROC and PR curves |
 | `panels/` | easiest and hardest image of each defect type, good image with the highest score |
 | `split.json` | training images used for fitting and for calibration |
+
+`iad summary` writes `runs/<model>/summary.md` and `runs/<model>/calibration.png` (the figure above).
 
 ## Repository layout
 
@@ -216,8 +293,10 @@ configs/           default.yaml with all the parameters
 
 ## Limitations
 
-- The calibration set is small (about 27 images per category), so the false positive rate moves in steps of about
-  4 % and depends on the split seed.
+- The calibration set is small (6 to 39 images per category), so the false positive rate moves in steps of 3 to
+  17 % and depends on the split seed. On several categories the held-out train normals are not representative of
+  the test normals (see point 2 of the 15-category results).
+- PatchCore and PaDiM use different backbones (WideResNet-50-2 and ResNet-18).
 - Pixel metrics are computed at the model resolution (256x256), not at the original image resolution.
 - MVTec AD has controlled lighting and pose. A real production line would also need to monitor drift in the
   distribution of normal scores.
@@ -225,7 +304,9 @@ configs/           default.yaml with all the parameters
 ## Roadmap
 
 - [x] Calibrated threshold, pixel metrics, error analysis on pill
-- [ ] All 15 MVTec AD categories, PatchCore vs PaDiM (and EfficientAD, trained on GPU)
+- [x] All 15 MVTec AD categories, PatchCore vs PaDiM (GPU)
+- [ ] EfficientAD, and PaDiM with a WideResNet-50-2 backbone
+- [ ] Find where the train / test shift of normal scores comes from (leather, carpet, wood, zipper)
 - [x] OpenVINO FP32 / FP16 / INT8 export, latency and accuracy benchmark on CPU / iGPU / NPU (pill)
 - [x] INT8 backbone with a memory bank rebuilt from INT8 features
 - [ ] Two-stage deployment: INT8 backbone on NPU or CPU, nearest neighbour head in OpenVINO FP16 on iGPU
@@ -239,7 +320,10 @@ configs/           default.yaml with all the parameters
 ## Dataset and licence
 
 [MVTec AD](https://www.mvtec.com/company/research/datasets/mvtec-ad) (Bergmann et al., CVPR 2019 / IJCV 2021) is
-distributed under CC BY-NC-SA 4.0 and is **not** included in this repository. Code: Apache 2.0.
+distributed under CC BY-NC-SA 4.0 and is **not** included in this repository. `iad download` uses the link of the
+[MVTec download page](https://www.mvtec.com/company/research/datasets/mvtec-ad/downloads) and checks the SHA-256. If
+the link changes, download the archive from that page, extract it and pass the folder with `--data-root`.
+Code: Apache 2.0.
 
 ## Author
 

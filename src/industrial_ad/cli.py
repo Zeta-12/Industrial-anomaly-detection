@@ -7,7 +7,7 @@ import logging
 from pathlib import Path
 
 from industrial_ad.config import load_config
-from industrial_ad.data import MVTEC_CATEGORIES
+from industrial_ad.data import MVTEC_CATEGORIES, MVTEC_SHA256, MVTEC_URL
 
 
 def _overrides(args: argparse.Namespace) -> dict:
@@ -83,9 +83,10 @@ def main(argv: list[str] | None = None) -> None:
     cfg = load_config(args.config, _overrides(args))
 
     if args.command == "download":
-        from anomalib.data import MVTecAD
+        from anomalib.data.utils import DownloadInfo, download_and_extract
 
-        MVTecAD(root=cfg["data"]["root"], category=MVTEC_CATEGORIES[0]).prepare_data()
+        info = DownloadInfo(name="mvtecad", url=MVTEC_URL, hashsum=MVTEC_SHA256)
+        download_and_extract(Path(cfg["data"]["root"]), info)
         return
     from industrial_ad import pipeline
 

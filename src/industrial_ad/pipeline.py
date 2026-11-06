@@ -133,15 +133,20 @@ def detection_metrics(
             "image_threshold": image_threshold,
             "pixel_threshold": pixel_threshold,
             "pixel_low": float(np.median(np.concatenate([m.ravel() for m in calib_maps]))),
+            # kept to compare held-out train normals with test normals. Not rounded: the threshold is one of these
+            # scores, rounding can push it above itself
+            "image_scores": [float(s) for s in calib_scores],
         },
     }
 
 
 def summarize(output_dir: Path, model: str) -> str:
-    """Markdown table with all the evaluated categories of `model`."""
-    rows = []
+    """Markdown table with all the evaluated categories of `model`, and calibration.png if the scores are there."""
+    rows, overview = [], []
     for path in sorted((output_dir / model).glob("*/metrics.json")):
         m = json.loads(path.read_text(encoding="utf-8"))
+        if "image_scores" in m["calibration"]:
+            overview.append(_overview_row(path.parent, m))
         rows.append(
             (
                 m["category"],
@@ -179,7 +184,22 @@ def summarize(output_dir: Path, model: str) -> str:
     )
     table = "\n".join(lines)
     (output_dir / model / "summary.md").write_text(table + "\n", encoding="utf-8")
+    if overview:
+        title = f"{model}: image score / calibrated threshold"
+        viz.save_calibration_overview(output_dir / model / "calibration.png", overview, title)
     return table
+
+
+def _overview_row(run: Path, m: dict[str, Any]) -> dict[str, Any]:
+    with (run / "scores.csv").open(encoding="utf-8") as f:
+        scored = [(int(r["label"]), float(r["score"])) for r in csv.DictReader(f)]
+    return {
+        "category": m["category"],
+        "threshold": m["calibration"]["image_threshold"],
+        "calibration": m["calibration"]["image_scores"],
+        "normal": [s for label, s in scored if label == 0],
+        "defective": [s for label, s in scored if label == 1],
+    }
 
 
 def _environment() -> dict[str, str]:

@@ -35,6 +35,13 @@ MVTEC_CATEGORIES: tuple[str, ...] = (
     "zipper",
 )
 
+# from https://www.mvtec.com/company/research/datasets/mvtec-ad/downloads (the link in anomalib 2.7.0 returns 404)
+MVTEC_URL = (
+    "https://www.mydrive.ch/shares/163178/c8212c2166a9e4dfe22dd1bed476a345/download/420938113-1629960298/"
+    "mvtec_anomaly_detection.tar.xz"
+)
+MVTEC_SHA256 = "cf4313b13603bec67abb49ca959488f7eedce2a9f7795ec54446c649ac98cd3d"
+
 IMAGE_SUFFIXES = frozenset({".png", ".jpg", ".jpeg", ".bmp"})
 NORMAL = "good"
 
