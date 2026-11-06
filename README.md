@@ -12,6 +12,16 @@ Most of the work here went into the evaluation. A lot of anomaly detection demos
 set or only report image AUROC. Here the decision threshold is calibrated on held-out good images only, and the
 localisation is measured at pixel level.
 
+In short:
+
+- On the 15 MVTec AD categories, PatchCore gets 0.983 image AUROC and 0.922 AUPRO on average, against 0.873 and
+  0.882 for PaDiM ([results](#mvtec-ad-15-categories)).
+- The threshold calibrated on held-out good images does not transfer well to the test set: 73 false alarms on 467
+  good images for a 5 % target, and 17 of 32 on leather with an image AUROC of 1.000.
+- On a laptop chip (Intel Core Ultra 5), OpenVINO FP16 on the iGPU runs 3.4x faster than PyTorch on the CPU with the
+  same accuracy. With an INT8 backbone and a memory bank rebuilt from its features, the backbone runs 3.7x faster
+  for 0.006 AUPRO ([edge deployment](#edge-deployment-cpu-igpu-and-npu)).
+
 ## Results
 
 ### MVTec AD, 15 categories
@@ -305,17 +315,13 @@ configs/           default.yaml with all the parameters
 
 - [x] Calibrated threshold, pixel metrics, error analysis on pill
 - [x] All 15 MVTec AD categories, PatchCore vs PaDiM (GPU)
-- [ ] EfficientAD, and PaDiM with a WideResNet-50-2 backbone
-- [ ] Find where the train / test shift of normal scores comes from (leather, carpet, wood, zipper)
 - [x] OpenVINO FP32 / FP16 / INT8 export, latency and accuracy benchmark on CPU / iGPU / NPU (pill)
 - [x] INT8 backbone with a memory bank rebuilt from INT8 features
-- [ ] Two-stage deployment: INT8 backbone on NPU or CPU, nearest neighbour head in OpenVINO FP16 on iGPU
-- [ ] Fix the full-graph INT8 export (ignored scope covering the whole head) and run the benchmark again
-- [ ] Test the NPU again with the backbone-only INT8 model
-- [ ] Benchmark on all categories
+- [ ] Calibration: find where the train / test shift of normal scores comes from (leather, carpet, wood, zipper)
+  and measure the variance of the operating point across split seeds
+- [ ] EfficientAD, and PaDiM with a WideResNet-50-2 backbone
+- [ ] Two-stage deployment: INT8 backbone on the NPU or CPU, nearest neighbour head in OpenVINO FP16 on the iGPU
 - [ ] Interactive demo (Gradio, Hugging Face Spaces)
-- [ ] REST service (FastAPI) and Docker image
-- [ ] Variance of the calibrated operating point across split seeds
 
 ## Dataset and licence
 
