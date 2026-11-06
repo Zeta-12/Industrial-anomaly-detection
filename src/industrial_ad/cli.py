@@ -56,8 +56,26 @@ def main(argv: list[str] | None = None) -> None:
     p_sum = sub.add_parser("summary", parents=[common], help="Markdown table over evaluated categories.")
     p_sum.add_argument("--model", default="patchcore", choices=["patchcore", "padim"])
 
+    sub.add_parser("devices", help="OpenVINO devices and power state: run before a benchmark.")
+    p_exp = sub.add_parser("export", parents=[per_run], help="Export to OpenVINO IR (fp32 / fp16 / int8).")
+    p_exp.add_argument("--precision", nargs="+", default=["fp32", "fp16", "int8"], choices=["fp32", "fp16", "int8"])
+    p_exp.add_argument("--force", action="store_true", help="Re-export even if the IR exists.")
+    p_bench = sub.add_parser("benchmark", parents=[per_run], help="Latency + accuracy on CPU / iGPU / NPU.")
+    p_bench.add_argument("--precision", nargs="+", default=["fp32", "fp16", "int8"], choices=["fp32", "fp16", "int8"])
+    p_bench.add_argument(
+        "--targets", nargs="+", default=["CPU", "GPU", "GPU:f32", "NPU"], help="DEVICE or DEVICE:<exec precision>."
+    )
+    p_bench.add_argument("--iterations", type=int, default=100, help="Timed batch-1 inferences per target.")
+    p_bench.add_argument("--warmup", type=int, default=10)
+    p_bench.add_argument("--no-accuracy", action="store_true", help="Latency only (skips re-scoring the test set).")
+    p_bench.add_argument("--no-pytorch", action="store_true", help="Skip the PyTorch CPU baseline.")
+    p_bench.add_argument("--report-only", action="store_true", help="Re-render table and figure from results.json.")
+
     args = parser.parse_args(argv)
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s", datefmt="%H:%M:%S")
+    if args.command == "devices":
+        _print_devices()
+        return
     cfg = load_config(args.config, _overrides(args))
 
     if args.command == "download":
@@ -78,6 +96,41 @@ def main(argv: list[str] | None = None) -> None:
             pipeline.train(run_cfg, force=args.force)
         if args.command in ("evaluate", "run"):
             pipeline.evaluate(run_cfg, device=args.device)
+        if args.command == "export":
+            from industrial_ad import export
+
+            export.export(run_cfg, args.precision, force=args.force)
+        if args.command == "benchmark":
+            from industrial_ad import benchmark
+
+            if args.report_only:
+                print(benchmark.markdown_table(benchmark.render(run_cfg)))
+                continue
+            rows = benchmark.run(
+                run_cfg,
+                args.precision,
+                args.targets,
+                iterations=args.iterations,
+                warmup=args.warmup,
+                accuracy=not args.no_accuracy,
+                pytorch_baseline=not args.no_pytorch,
+            )
+            print(benchmark.markdown_table(rows))
+
+
+def _print_devices() -> None:
+    from industrial_ad.benchmark import environment
+
+    env = environment()
+    print(f"OpenVINO {env['openvino']} | {env['os']}")
+    for device, props in env["devices"].items():
+        print(
+            f"  {device:4s} {props.get('FULL_DEVICE_NAME', '?')}"
+            + "".join(f" | {k}={v}" for k, v in props.items() if k != "FULL_DEVICE_NAME")
+        )
+    print(f"  on AC power: {env['on_ac_power']} | battery saver: {env['battery_saver']}")
+    if env["on_ac_power"] is False or env["battery_saver"]:
+        print("  WARNING: plug the laptop in and disable battery saver before benchmarking.")
 
 
 if __name__ == "__main__":

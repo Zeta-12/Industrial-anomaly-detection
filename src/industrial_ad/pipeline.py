@@ -58,46 +58,31 @@ def evaluate(cfg: dict[str, Any], device: str | None = None) -> dict[str, Any]:
     ckpt = out / "model.ckpt"
     if not ckpt.exists():
         raise FileNotFoundError(f"No checkpoint at {ckpt}: run `iad train` first.")
-    cat_dir = category_dir(cfg)
     size = cfg["data"]["image_size"]
     ecfg = cfg["evaluation"]
     module = models.load(cfg, ckpt, device)
 
     # 1. Calibration on held-out defect-free images only.
-    split = json.loads((out / "split.json").read_text(encoding="utf-8"))
-    calib_paths = [cat_dir / "train" / NORMAL / name for name in split["calibration"]]
+    calib_paths = calibration_paths(cfg)
     calib_scores, calib_maps = models.score_images(module, calib_paths, size, ecfg["batch_size"], desc="Calibration")
-    image_threshold = M.calibrate_threshold(calib_scores, ecfg["max_fpr"])
-    pixel_threshold = M.calibrate_threshold([m.max() for m in calib_maps], ecfg["max_fpr"])
-    pixel_low = float(np.median(np.concatenate([m.ravel() for m in calib_maps])))
 
     # 2. Test set (stratified subsample only if requested).
-    samples = stratified_subset(index_test_set(cat_dir), cfg["data"]["max_test_samples"], cfg["data"]["seed"])
+    samples = test_samples(cfg)
     start = time.perf_counter()
     scores, maps = models.score_images(module, [s.image_path for s in samples], size, ecfg["batch_size"], desc="Test")
     elapsed = time.perf_counter() - start
     masks = [models.load_mask(s.mask_path, size) for s in samples]
-    labels = [s.label for s in samples]
-    defects = [s.defect for s in samples]
+    detection = detection_metrics(calib_scores, calib_maps, samples, scores, maps, masks, ecfg)
+    image_threshold = detection["calibration"]["image_threshold"]
+    pixel_threshold = detection["calibration"]["pixel_threshold"]
+    pixel_low = detection["calibration"]["pixel_low"]
 
     result: dict[str, Any] = {
         "model": cfg["model"]["name"],
         "category": cfg["data"]["category"],
         "n_test": len(samples),
         "n_calibration": len(calib_paths),
-        "image": M.image_metrics(labels, scores, image_threshold),
-        "pixel": {
-            "auroc": M.pixel_auroc(masks, maps),
-            "aupro": M.aupro(masks, maps, ecfg["aupro_fpr_limit"]),
-            "aupro_fpr_limit": ecfg["aupro_fpr_limit"],
-            "threshold": pixel_threshold,
-        },
-        "per_defect": M.per_defect_detection(defects, scores, image_threshold),
-        "calibration": {
-            "max_fpr": ecfg["max_fpr"],
-            "image_threshold": image_threshold,
-            "pixel_threshold": pixel_threshold,
-        },
+        **detection,
         "timing": {
             "ms_per_image_end_to_end": round(1000 * elapsed / len(samples), 1),
             "device": str(next(module.parameters()).device),
@@ -111,6 +96,47 @@ def evaluate(cfg: dict[str, Any], device: str | None = None) -> dict[str, Any]:
     _write_figures(out, cfg, samples, scores, maps, masks, image_threshold, pixel_threshold, pixel_low)
     _log_summary(result)
     return result
+
+
+def calibration_paths(cfg: dict[str, Any]) -> list[Path]:
+    """Held-out defect-free training images recorded at fitting time."""
+    split = json.loads((run_dir(cfg) / "split.json").read_text(encoding="utf-8"))
+    return [category_dir(cfg) / "train" / NORMAL / name for name in split["calibration"]]
+
+
+def test_samples(cfg: dict[str, Any]) -> list[Sample]:
+    return stratified_subset(index_test_set(category_dir(cfg)), cfg["data"]["max_test_samples"], cfg["data"]["seed"])
+
+
+def detection_metrics(
+    calib_scores: np.ndarray,
+    calib_maps: list[np.ndarray],
+    samples: list[Sample],
+    scores: np.ndarray,
+    maps: list[np.ndarray],
+    masks: list[np.ndarray],
+    ecfg: dict[str, Any],
+) -> dict[str, Any]:
+    """Thresholds from calibration scores only, then image, pixel and per-defect metrics."""
+    image_threshold = M.calibrate_threshold(calib_scores, ecfg["max_fpr"])
+    pixel_threshold = M.calibrate_threshold([m.max() for m in calib_maps], ecfg["max_fpr"])
+    labels = [s.label for s in samples]
+    return {
+        "image": M.image_metrics(labels, scores, image_threshold),
+        "pixel": {
+            "auroc": M.pixel_auroc(masks, maps),
+            "aupro": M.aupro(masks, maps, ecfg["aupro_fpr_limit"]),
+            "aupro_fpr_limit": ecfg["aupro_fpr_limit"],
+            "threshold": pixel_threshold,
+        },
+        "per_defect": M.per_defect_detection([s.defect for s in samples], scores, image_threshold),
+        "calibration": {
+            "max_fpr": ecfg["max_fpr"],
+            "image_threshold": image_threshold,
+            "pixel_threshold": pixel_threshold,
+            "pixel_low": float(np.median(np.concatenate([m.ravel() for m in calib_maps]))),
+        },
+    }
 
 
 def summarize(output_dir: Path, model: str) -> str:

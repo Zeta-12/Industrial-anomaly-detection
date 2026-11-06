@@ -20,7 +20,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-openvino = ["openvino>=2025.0"]
+openvino = ["openvino>=2025.0", "nncf>=2.14"]
 
 [project.scripts]
 iad = "industrial_ad.cli:main"
